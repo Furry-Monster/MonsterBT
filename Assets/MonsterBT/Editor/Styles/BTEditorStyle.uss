@@ -1,0 +1,136 @@
+/* 编辑器根容器 */
+.behavior-tree-editor {
+    background-color: rgb(35, 35, 35);
+    flex-direction: column;
+    height: 100%;
+}
+
+/* 工具栏样式 */
+.editor-toolbar {
+    background-color: rgb(45, 45, 45);
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(60, 60, 60);
+    height: 32px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.toolbar-field {
+    background-color: rgb(55, 55, 55);
+    border-radius: 3px;
+    border-width: 1px;
+    width: 384px;
+    border-color: rgb(70, 70, 70);
+    color: rgb(200, 200, 200);
+    padding: 4px 12px;
+    margin: 2px;
+}
+
+.toolbar-button {
+    background-color: rgb(55, 55, 55);
+    border-radius: 3px;
+    border-width: 1px;
+    border-color: rgb(70, 70, 70);
+    color: rgb(200, 200, 200);
+    padding: 4px 12px;
+    margin: 2px;
+}
+
+.toolbar-button:hover {
+    background-color: rgb(65, 65, 65);
+    border-color: rgb(80, 80, 80);
+}
+
+.toolbar-button:active {
+    background-color: rgb(41, 40, 40);
+}
+
+/* 图形视图区域 */
+.graph-container {
+    background-color: rgb(30, 30, 30);
+    flex: 1;
+    background-repeat: repeat;
+}
+
+/* 状态指示器 */
+.status-bar {
+    height: 24px;
+    background-color: rgb(40, 40, 40);
+    border-top-width: 1px;
+    border-top-color: rgb(60, 60, 60);
+    flex-direction: row;
+    align-items: center;
+    padding-left: 8px;
+}
+
+.state-indicator {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+}
+
+.state-running {
+    background-color: rgb(100, 255, 100);
+}
+
+.state-success {
+    background-color: rgb(100, 255, 100);
+}
+
+.state-failure {
+    background-color: rgb(255, 100, 100);
+}
+
+.state-idle {
+    background-color: rgb(150, 150, 150);
+}
+
+/* 选择框 */
+.selection-box {
+    background-color: rgba(100, 150, 255, 0.2);
+    border-width: 1px;
+    border-color: rgb(100, 150, 255);
+    border-radius: 2px;
+}
+
+/* 侧边栏 */
+.sidebar {
+    background-color: rgb(40, 40, 40);
+    border-left-width: 1px;
+    border-left-color: rgb(60, 60, 60);
+    width: 250px;
+    padding: 8px;
+}
+
+.sidebar-section {
+    margin-bottom: 12px;
+}
+
+.sidebar-title {
+    color: rgb(220, 220, 220);
+    font-size: 13px;
+    margin-bottom: 4px;
+    padding: 4px 0;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(60, 60, 60);
+}
+
+/* 节点列表项 */
+.node-list-item {
+    background-color: rgb(50, 50, 50);
+    border-radius: 4px;
+    padding: 6px;
+    margin: 2px 0;
+    color: rgb(200, 200, 200);
+    font-size: 11px;
+    cursor: link;
+}
+
+.node-list-item:hover {
+    background-color: rgb(60, 60, 60);
+}

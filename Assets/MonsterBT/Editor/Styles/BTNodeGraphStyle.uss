@@ -1,0 +1,194 @@
+/* GraphView容器 */
+.node-graph-view {
+    background-color: rgb(20, 20, 20);
+    flex: 1;
+}
+
+/* 节点描述样式 */
+.node-description {
+    color: rgb(180, 180, 180);
+    font-size: 11px;
+    white-space: normal;
+    padding: 4px 8px;
+}
+
+/* 节点类型样式 */
+.root-node {
+    --node-color: rgb(100, 255, 100);
+}
+
+.composite-node {
+    --node-color: rgb(100, 150, 255);
+}
+
+.decorator-node {
+    --node-color: rgb(255, 200, 100);
+}
+
+.action-node {
+    --node-color: rgb(255, 100, 100);
+}
+
+.root-node #title {
+    background-color: rgba(100, 255, 100, 0.3);
+}
+
+.composite-node #title {
+    background-color: rgba(100, 150, 255, 0.3);
+}
+
+.decorator-node #title {
+    background-color: rgba(255, 200, 100, 0.3);
+}
+
+.action-node #title {
+    background-color: rgba(255, 100, 100, 0.3);
+}
+
+/* MiniMap */
+.mini-map {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 200px;
+    height: 140px;
+    border-width: 2px;
+    border-color: rgb(45, 45, 50);
+    border-radius: 4px;
+    background-color: rgba(25, 25, 30, 0.95);
+}
+
+/* Blackboard */
+.blackboard {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 320px;
+    min-height: 400px;
+    background-color: rgb(25, 25, 28);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgb(45, 48, 52);
+    padding: 8px;
+}
+
+/* Blackboard 变量行容器 */
+.blackboard-variable-row {
+    margin-bottom: 8px;
+    background-color: rgb(35, 35, 40);
+    border-radius: 6px;
+    padding: 8px;
+    border-width: 1px;
+    border-color: rgb(60, 60, 65);
+    transition-property: background-color, border-color;
+    transition-duration: 0.15s;
+}
+
+.blackboard-variable-row:hover {
+    background-color: rgb(40, 40, 45);
+    border-color: rgb(70, 70, 80);
+}
+
+/* Blackboard 变量信息行（名称、类型、删除按钮） */
+.blackboard-variable-info {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 4px;
+    min-height: 20px;
+}
+
+.blackboard-variable-name {
+    flex: 1;
+    color: rgb(220, 220, 220);
+    font-size: 12px;
+    -unity-text-align: middle-left;
+}
+
+.blackboard-variable-type {
+    color: rgb(150, 200, 255);
+    font-size: 10px;
+    background-color: rgb(45, 55, 70);
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-right: 6px;
+    -unity-text-align: middle-center;
+}
+
+.blackboard-delete-button {
+    width: 22px;
+    height: 22px;
+    background-color: rgb(160, 45, 45);
+    color: white;
+    border-radius: 4px;
+    border-width: 0;
+    font-size: 12px;
+    -unity-text-align: middle-center;
+    transition-property: background-color;
+    transition-duration: 0.15s;
+}
+
+.blackboard-delete-button:hover {
+    background-color: rgb(200, 65, 65);
+}
+
+.blackboard-delete-button:active {
+    background-color: rgb(140, 35, 35);
+}
+
+/* 值编辑行 */
+.blackboard-variable-value {
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.blackboard-value-editor {
+    flex: 1;
+    min-height: 20px;
+}
+
+/* 具体控件样式 */
+.blackboard-value-editor .unity-toggle {
+    margin: 0;
+}
+
+.blackboard-value-editor .unity-text-field,
+.blackboard-value-editor .unity-float-field {
+    margin: 0;
+}
+
+.blackboard-value-editor .unity-text-field > .unity-text-field__input,
+.blackboard-value-editor .unity-float-field > .unity-text-field__input {
+    background-color: rgb(45, 45, 50);
+    border-color: rgb(70, 70, 75);
+    border-radius: 4px;
+    padding: 6px 8px;
+    color: rgb(220, 220, 220);
+    transition-property: border-color, background-color;
+    transition-duration: 0.15s;
+}
+
+.blackboard-value-editor .unity-text-field > .unity-text-field__input:focus,
+.blackboard-value-editor .unity-float-field > .unity-text-field__input:focus {
+    border-color: rgb(100, 150, 255);
+    background-color: rgb(50, 50, 55);
+}
+
+.blackboard-value-editor .unity-vector3-field {
+    margin: 0;
+}
+
+.blackboard-value-editor .unity-vector3-field > .unity-vector3-field__input {
+    background-color: rgb(45, 45, 50);
+    border-color: rgb(70, 70, 75);
+    margin: 0 1px;
+}
+
+.blackboard-value-editor .unity-object-field {
+    margin: 0;
+}
+
+.blackboard-value-editor .unity-object-field > .unity-object-field__selector {
+    background-color: rgb(45, 45, 50);
+    border-color: rgb(70, 70, 75);
+    border-radius: 3px;
+}

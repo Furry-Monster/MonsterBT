@@ -1,0 +1,186 @@
+/* BT Property Inspector Styles */
+
+.inspector-container {
+    flex-direction: column;
+    background-color: rgb(56, 56, 56);
+    border-width: 1px;
+    border-color: rgb(33, 33, 33);
+    flex-grow: 1;
+}
+
+.content-scroll {
+    flex-grow: 1;
+    padding: 12px;
+}
+
+.empty-state {
+    -unity-text-align: upper-center;
+    color: rgb(153, 153, 153);
+    font-size: 14px;
+    margin-top: 20px;
+}
+
+/* Field Styles */
+.inspector-field {
+    margin-bottom: 4px;
+}
+
+.field-separator {
+    height: 1px;
+    background-color: rgb(102, 102, 102);
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+/* Text Field */
+.inspector-field .unity-text-field {
+    margin-bottom: 4px;
+}
+
+.inspector-field .unity-text-field__input {
+    background-color: rgb(42, 42, 42);
+    border-color: rgb(70, 70, 70);
+    color: rgb(210, 210, 210);
+}
+
+.inspector-field .unity-text-field__input:focus {
+    border-color: rgb(89, 155, 220);
+}
+
+/* Float Field */
+.inspector-field .unity-float-field {
+    margin-bottom: 4px;
+}
+
+.inspector-field .unity-float-field__input {
+    background-color: rgb(42, 42, 42);
+    border-color: rgb(70, 70, 70);
+    color: rgb(210, 210, 210);
+}
+
+.inspector-field .unity-float-field__input:focus {
+    border-color: rgb(89, 155, 220);
+}
+
+/* Integer Field */
+.inspector-field .unity-integer-field {
+    margin-bottom: 4px;
+}
+
+.inspector-field .unity-integer-field__input {
+    background-color: rgb(42, 42, 42);
+    border-color: rgb(70, 70, 70);
+    color: rgb(210, 210, 210);
+}
+
+.inspector-field .unity-integer-field__input:focus {
+    border-color: rgb(89, 155, 220);
+}
+
+/* Toggle */
+.inspector-field .unity-toggle {
+    margin-bottom: 4px;
+}
+
+.inspector-field .unity-toggle__input {
+    border-color: rgb(70, 70, 70);
+}
+
+.inspector-field .unity-toggle__input:checked {
+    background-color: rgb(89, 155, 220);
+    border-color: rgb(89, 155, 220);
+}
+
+/* Vector3 Field */
+.inspector-field .unity-vector3-field {
+    margin-bottom: 4px;
+    flex-direction: row;
+}
+
+.inspector-field .unity-vector3-field__input {
+    flex-direction: row;
+    flex-grow: 1;
+}
+
+.inspector-field .unity-vector3-field .unity-float-field {
+    flex-grow: 1;
+    margin-left: 2px;
+    margin-right: 2px;
+    min-width: 50px;
+}
+
+.inspector-field .unity-vector3-field .unity-float-field__input {
+    background-color: rgb(42, 42, 42);
+    border-color: rgb(70, 70, 70);
+    color: rgb(210, 210, 210);
+    min-width: 50px;
+}
+
+.inspector-field .unity-vector3-field .unity-float-field__input:focus {
+    border-color: rgb(89, 155, 220);
+}
+
+.inspector-field .unity-vector3-field .unity-float-field__label {
+    color: rgb(196, 196, 196);
+    min-width: 12px;
+    max-width: 12px;
+    margin-right: 2px;
+}
+
+/* Object Field (GameObject) */
+.inspector-field .unity-object-field {
+    margin-bottom: 4px;
+}
+
+.inspector-field .unity-object-field__input {
+    background-color: rgb(42, 42, 42);
+    border-color: rgb(70, 70, 70);
+    color: rgb(210, 210, 210);
+}
+
+.inspector-field .unity-object-field__input:focus {
+    border-color: rgb(89, 155, 220);
+}
+
+.inspector-field .unity-object-field__selector {
+    background-color: rgb(42, 42, 42);
+    border-color: rgb(70, 70, 70);
+}
+
+/* Enum Field */
+.inspector-field .unity-enum-field {
+    margin-bottom: 4px;
+}
+
+.inspector-field .unity-enum-field .unity-popup-field__input {
+    background-color: rgb(42, 42, 42);
+    border-color: rgb(70, 70, 70);
+    color: rgb(210, 210, 210);
+}
+
+.inspector-field .unity-enum-field .unity-popup-field__input:focus {
+    border-color: rgb(89, 155, 220);
+}
+
+/* Field Labels */
+.inspector-field .unity-base-field__label {
+    color: rgb(196, 196, 196);
+    min-width: 120px;
+}
+
+/* Multiline Description Field */
+.description-field {
+    margin-bottom: 8px;
+}
+
+.description-field .unity-text-field__input {
+    min-height: 60px;
+    white-space: normal;
+    background-color: rgb(42, 42, 42);
+    border-color: rgb(70, 70, 70);
+    color: rgb(210, 210, 210);
+}
+
+.description-field .unity-text-field__input:focus {
+    border-color: rgb(89, 155, 220);
+}
