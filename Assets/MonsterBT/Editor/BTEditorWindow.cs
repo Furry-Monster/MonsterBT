@@ -56,6 +56,21 @@ namespace MonsterBT.Editor
         public void SetBehaviorTree(BehaviorTree behaviorTree)
         {
             currentBehaviorTree = behaviorTree;
+            
+            if (behaviorTree != null && behaviorTree.Blackboard == null)
+            {
+                var blackboard = CreateInstance<Blackboard>();
+                blackboard.name = "Blackboard";
+                behaviorTree.Blackboard = blackboard;
+                
+                if (!string.IsNullOrEmpty(AssetDatabase.GetAssetPath(behaviorTree)))
+                {
+                    AssetDatabase.AddObjectToAsset(blackboard, behaviorTree);
+                    EditorUtility.SetDirty(behaviorTree);
+                    AssetDatabase.SaveAssets();
+                }
+            }
+            
             if (behaviorTreeField != null)
                 behaviorTreeField.value = behaviorTree;
             graphView?.SetBehaviorTree(behaviorTree);
@@ -312,9 +327,14 @@ namespace MonsterBT.Editor
         {
             var tree = CreateInstance<BehaviorTree>();
             var rootNode = CreateInstance<RootNode>();
+            var blackboard = CreateInstance<Blackboard>();
+            
             rootNode.name = "Root";
             rootNode.Position = new Vector2(400, 100);
+            blackboard.name = "Blackboard";
+            
             tree.RootNode = rootNode;
+            tree.Blackboard = blackboard;
             tree.name = "New BehaviorTree";
 
             string path = EditorUtility.SaveFilePanelInProject("Save Behavior Tree", "NewBehaviorTree", "asset", "");
@@ -322,6 +342,7 @@ namespace MonsterBT.Editor
 
             AssetDatabase.CreateAsset(tree, path);
             AssetDatabase.AddObjectToAsset(rootNode, tree);
+            AssetDatabase.AddObjectToAsset(blackboard, tree);
             AssetDatabase.SaveAssets();
 
             behaviorTreeField.value = tree;
