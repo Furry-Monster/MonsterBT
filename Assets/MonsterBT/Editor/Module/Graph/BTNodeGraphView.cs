@@ -70,6 +70,12 @@ namespace MonsterBT.Editor
         public void SetBehaviorTree(BehaviorTree tree)
         {
             behaviorTree = tree;
+
+            if (tree != null)
+            {
+                BTAssetService.ValidateAndFixBehaviorTree(tree);
+            }
+
             PopulateView();
             RefreshBlackboardView();
         }
@@ -105,7 +111,7 @@ namespace MonsterBT.Editor
             if (node == null || node.Equals(null))
                 return;
 
-            foreach (var child in BTNodeEditorHelper.GetChildren(node))
+            foreach (var child in BTNodeEditorService.GetChildren(node))
             {
                 if (child == null || child.Equals(null))
                     continue;
@@ -141,10 +147,6 @@ namespace MonsterBT.Editor
 
         private BTNodeView CreateNodeViewFromNode(BTNode node)
         {
-            if (node == null)
-                return null;
-
-            // 检查节点是否已被销毁
             if (node == null || node.Equals(null))
                 return null;
 
@@ -174,7 +176,7 @@ namespace MonsterBT.Editor
                     continue;
 
                 // 连接到所有子节点
-                foreach (var child in BTNodeEditorHelper.GetChildren(node))
+                foreach (var child in BTNodeEditorService.GetChildren(node))
                 {
                     if (child == null || child.Equals(null))
                         continue;
@@ -224,7 +226,12 @@ namespace MonsterBT.Editor
                         if (parentView?.Node != null && !parentView.Node.Equals(null) &&
                             childView?.Node != null && !childView.Node.Equals(null))
                         {
-                            BTNodeEditorHelper.RemoveChild(parentView.Node, childView.Node);
+                            BTNodeEditorService.RemoveChild(parentView.Node, childView.Node);
+                            // 断开连接时也需要保存
+                            if (behaviorTree != null)
+                            {
+                                BTEditorAssetService.MarkDirtyAndSave(behaviorTree);
+                            }
                         }
                     }
                 }
@@ -236,7 +243,7 @@ namespace MonsterBT.Editor
                         continue;
 
                     // 检查是否可以删除（RootNode 不能删除）
-                    if (!BTNodeEditorHelper.CanDeleteNode(nodeView.Node))
+                    if (!BTNodeEditorService.CanDeleteNode(nodeView.Node))
                     {
                         Debug.LogWarning("Cannot delete root node!");
                         // 将节点重新添加到视图中，防止被删除
@@ -270,7 +277,7 @@ namespace MonsterBT.Editor
                         if (parentView?.Node != null && !parentView.Node.Equals(null) &&
                             childView == nodeView && node != null)
                         {
-                            BTNodeEditorHelper.RemoveChild(parentView.Node, node);
+                            BTNodeEditorService.RemoveChild(parentView.Node, node);
                         }
                     }
 
@@ -280,23 +287,32 @@ namespace MonsterBT.Editor
                         if (parentNode == null || parentNode.Equals(null))
                             continue;
 
-                        BTNodeEditorHelper.RemoveChild(parentNode, node);
+                        BTNodeEditorService.RemoveChild(parentNode, node);
                     }
 
                     // 销毁节点对象（通过 Delete 热键删除时需要实际销毁）
-                    Object.DestroyImmediate(node, true);
+                    try
+                    {
+                        Object.DestroyImmediate(node, true);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Debug.LogError($"Failed to destroy node: {ex.Message}");
+                    }
                 }
 
-                // 如果有节点被删除，保存资源
+                // 如果有节点被删除，验证并保存资源
                 if (nodesToRemove.Count > 0 && behaviorTree != null)
                 {
-                    BTEditorAssetHelper.MarkDirtyAndSave(behaviorTree);
+                    BTAssetService.ValidateAndFixBehaviorTree(behaviorTree);
+                    BTEditorAssetService.MarkDirtyAndSave(behaviorTree);
                 }
             }
 
             // 处理创建的连接
             if (graphViewChange.edgesToCreate != null)
             {
+                bool connectionChanged = false;
                 foreach (var edge in graphViewChange.edgesToCreate)
                 {
                     var parentView = edge.output.node as BTNodeView;
@@ -305,8 +321,20 @@ namespace MonsterBT.Editor
                     if (parentView?.Node != null && !parentView.Node.Equals(null) &&
                         childView?.Node != null && !childView.Node.Equals(null))
                     {
-                        BTNodeEditorHelper.SetChild(parentView.Node, childView.Node);
+                        // 检查是否已存在连接，避免重复
+                        var existingChildren = BTNodeEditorService.GetChildren(parentView.Node);
+                        if (!existingChildren.Contains(childView.Node))
+                        {
+                            BTNodeEditorService.SetChild(parentView.Node, childView.Node);
+                            connectionChanged = true;
+                        }
                     }
+                }
+
+                // 如果有连接变更，保存资源
+                if (connectionChanged && behaviorTree != null)
+                {
+                    BTEditorAssetService.MarkDirtyAndSave(behaviorTree);
                 }
             }
 
@@ -390,7 +418,7 @@ namespace MonsterBT.Editor
             if (behaviorTree == null)
                 return;
 
-            var node = BTEditorAssetHelper.CreateNodeInAsset(behaviorTree, typeof(T));
+            var node = BTEditorAssetService.CreateNodeInAsset(behaviorTree, typeof(T));
             if (node == null)
                 return;
 
@@ -407,7 +435,7 @@ namespace MonsterBT.Editor
             if (behaviorTree == null)
                 return;
 
-            var node = BTEditorAssetHelper.CreateNodeInAsset(behaviorTree, type);
+            var node = BTEditorAssetService.CreateNodeInAsset(behaviorTree, type);
             if (node == null)
                 return;
 
@@ -428,25 +456,41 @@ namespace MonsterBT.Editor
 
         private void DuplicateNode(BTNodeView nodeView)
         {
-            if (behaviorTree == null)
+            if (behaviorTree == null || nodeView?.Node == null || nodeView.Node.Equals(null))
                 return;
 
-            var originalNode = nodeView.Node;
-            var duplicatedNode = Object.Instantiate(originalNode);
-            duplicatedNode.name = originalNode.name + " (Copy)";
+            try
+            {
+                var originalNode = nodeView.Node;
+                var duplicatedNode = Object.Instantiate(originalNode);
+                duplicatedNode.name = originalNode.name + " (Copy)";
 
-            AssetDatabase.AddObjectToAsset(duplicatedNode, behaviorTree);
-            BTEditorAssetHelper.MarkDirtyAndSave(behaviorTree);
+                // 清除子节点引用，避免复制时包含子节点
+                foreach (var child in BTNodeEditorService.GetChildren(duplicatedNode).ToList())
+                {
+                    BTNodeEditorService.RemoveChild(duplicatedNode, child);
+                }
 
-            var duplicatedView = CreateNodeViewFromNode(duplicatedNode);
-            var originalPos = nodeView.GetPosition();
-            duplicatedView.SetPosition(new Rect(originalPos.x + 200, originalPos.y, originalPos.width,
-                originalPos.height));
+                AssetDatabase.AddObjectToAsset(duplicatedNode, behaviorTree);
+                BTEditorAssetService.MarkDirtyAndSave(behaviorTree);
+
+                var duplicatedView = CreateNodeViewFromNode(duplicatedNode);
+                if (duplicatedView != null)
+                {
+                    var originalPos = nodeView.GetPosition();
+                    duplicatedView.SetPosition(new Rect(originalPos.x + 200, originalPos.y, originalPos.width,
+                        originalPos.height));
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Failed to duplicate node: {ex.Message}");
+            }
         }
 
         private void DeleteNode(BTNodeView nodeView)
         {
-            if (!BTNodeEditorHelper.CanDeleteNode(nodeView.Node))
+            if (!BTNodeEditorService.CanDeleteNode(nodeView.Node))
             {
                 Debug.LogWarning("Cannot delete root node!");
                 return;
@@ -480,16 +524,25 @@ namespace MonsterBT.Editor
                     if (parentNode == null || parentNode.Equals(null))
                         continue;
 
-                    BTNodeEditorHelper.RemoveChild(parentNode, node);
+                    BTNodeEditorService.RemoveChild(parentNode, node);
                 }
             }
 
             RemoveElement(nodeView);
             nodeViews.Remove(nodeView.Node);
 
-            Object.DestroyImmediate(nodeView.Node, true);
+            try
+            {
+                Object.DestroyImmediate(nodeView.Node, true);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Failed to destroy node: {ex.Message}");
+            }
 
-            BTEditorAssetHelper.MarkDirtyAndSave(behaviorTree);
+            // 验证并保存资源
+            BTAssetService.ValidateAndFixBehaviorTree(behaviorTree);
+            BTEditorAssetService.MarkDirtyAndSave(behaviorTree);
         }
 
         private void PasteNode()
@@ -497,14 +550,37 @@ namespace MonsterBT.Editor
             if (copiedNode == null || behaviorTree == null)
                 return;
 
-            var pastedNode = Object.Instantiate(copiedNode);
-            pastedNode.name = copiedNode.name + " (Paste)";
+            if (copiedNode.Equals(null))
+            {
+                Debug.LogWarning("Copied node has been destroyed.");
+                copiedNode = null;
+                return;
+            }
 
-            AssetDatabase.AddObjectToAsset(pastedNode, behaviorTree);
-            BTEditorAssetHelper.MarkDirtyAndSave(behaviorTree);
+            try
+            {
+                var pastedNode = Object.Instantiate(copiedNode);
+                pastedNode.name = copiedNode.name + " (Paste)";
 
-            var pastedView = CreateNodeViewFromNode(pastedNode);
-            pastedView.SetPosition(new Rect(mousePosition, Vector2.zero));
+                // 清除子节点引用，避免粘贴时包含子节点
+                foreach (var child in BTNodeEditorService.GetChildren(pastedNode).ToList())
+                {
+                    BTNodeEditorService.RemoveChild(pastedNode, child);
+                }
+
+                AssetDatabase.AddObjectToAsset(pastedNode, behaviorTree);
+                BTEditorAssetService.MarkDirtyAndSave(behaviorTree);
+
+                var pastedView = CreateNodeViewFromNode(pastedNode);
+                if (pastedView != null)
+                {
+                    pastedView.SetPosition(new Rect(mousePosition, Vector2.zero));
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Failed to paste node: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -541,7 +617,7 @@ namespace MonsterBT.Editor
             behaviorTree.Blackboard.AddVariable(varName, varType, defaultValue);
 
             RefreshBlackboardView();
-            BTEditorAssetHelper.MarkDirtyAndSave(behaviorTree.Blackboard);
+            BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
         }
 
 
@@ -623,7 +699,7 @@ namespace MonsterBT.Editor
                 toggle.RegisterValueChangedCallback(evt =>
                 {
                     behaviorTree.Blackboard.SetBool(varName, evt.newValue);
-                    BTEditorAssetHelper.MarkDirtyAndSave(behaviorTree.Blackboard);
+                    BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
                 });
                 return toggle;
             }
@@ -637,7 +713,7 @@ namespace MonsterBT.Editor
                 floatField.RegisterValueChangedCallback(evt =>
                 {
                     behaviorTree.Blackboard.SetFloat(varName, evt.newValue);
-                    BTEditorAssetHelper.MarkDirtyAndSave(behaviorTree.Blackboard);
+                    BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
                 });
                 return floatField;
             }
@@ -651,7 +727,7 @@ namespace MonsterBT.Editor
                 textField.RegisterValueChangedCallback(evt =>
                 {
                     behaviorTree.Blackboard.SetString(varName, evt.newValue);
-                    BTEditorAssetHelper.MarkDirtyAndSave(behaviorTree.Blackboard);
+                    BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
                 });
                 return textField;
             }
@@ -665,7 +741,7 @@ namespace MonsterBT.Editor
                 vector3Field.RegisterValueChangedCallback(evt =>
                 {
                     behaviorTree.Blackboard.SetVector3(varName, evt.newValue);
-                    BTEditorAssetHelper.MarkDirtyAndSave(behaviorTree.Blackboard);
+                    BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
                 });
                 return vector3Field;
             }
@@ -680,7 +756,7 @@ namespace MonsterBT.Editor
                 objectField.RegisterValueChangedCallback(evt =>
                 {
                     behaviorTree.Blackboard.SetGameObject(varName, evt.newValue as GameObject);
-                    BTEditorAssetHelper.MarkDirtyAndSave(behaviorTree.Blackboard);
+                    BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
                 });
                 return objectField;
             }
@@ -694,7 +770,7 @@ namespace MonsterBT.Editor
 
             behaviorTree.Blackboard.RemoveVariable(varName);
             RefreshBlackboardView();
-            BTEditorAssetHelper.MarkDirtyAndSave(behaviorTree.Blackboard);
+            BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
         }
 
         public void RenameBlackboardVariable(string oldName, string newName)
@@ -715,7 +791,7 @@ namespace MonsterBT.Editor
 
             behaviorTree.Blackboard.RenameVariable(oldName, newName);
             RefreshBlackboardView();
-            BTEditorAssetHelper.MarkDirtyAndSave(behaviorTree.Blackboard);
+            BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
         }
 
         private static readonly Dictionary<Type, (object defaultValue, string displayName)> TypeInfo =

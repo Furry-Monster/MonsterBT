@@ -169,13 +169,14 @@ namespace MonsterBT.Editor
 
             return fieldType switch
             {
-                var t when t == typeof(string) => BTFieldEditorHelper.CreateStringField(field, node, fieldName),
-                var t when t == typeof(float) => BTFieldEditorHelper.CreateFloatField(field, node, fieldName),
-                var t when t == typeof(int) => BTFieldEditorHelper.CreateIntField(field, node, fieldName),
-                var t when t == typeof(bool) => BTFieldEditorHelper.CreateBoolField(field, node, fieldName),
-                var t when t == typeof(Vector3) => BTFieldEditorHelper.CreateVector3Field(field, node, fieldName),
-                var t when t == typeof(GameObject) => BTFieldEditorHelper.CreateGameObjectField(field, node, fieldName),
-                var t when t.IsEnum => BTFieldEditorHelper.CreateEnumField(field, node, fieldName),
+                var t when t == typeof(string) => BTFieldEditorService.CreateStringField(field, node, fieldName),
+                var t when t == typeof(float) => BTFieldEditorService.CreateFloatField(field, node, fieldName),
+                var t when t == typeof(int) => BTFieldEditorService.CreateIntField(field, node, fieldName),
+                var t when t == typeof(bool) => BTFieldEditorService.CreateBoolField(field, node, fieldName),
+                var t when t == typeof(Vector3) => BTFieldEditorService.CreateVector3Field(field, node, fieldName),
+                var t when t == typeof(GameObject) =>
+                    BTFieldEditorService.CreateGameObjectField(field, node, fieldName),
+                var t when t.IsEnum => BTFieldEditorService.CreateEnumField(field, node, fieldName),
                 _ => null
             };
         }

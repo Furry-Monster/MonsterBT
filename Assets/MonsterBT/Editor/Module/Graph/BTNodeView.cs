@@ -1,3 +1,4 @@
+using MonsterBT.Editor.Services;
 using MonsterBT.Runtime;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
@@ -53,7 +54,7 @@ namespace MonsterBT.Editor
         private void SetupPorts()
         {
             // Input Part
-            if (BTNodeEditorHelper.HasInputPort(Node))
+            if (BTNodeEditorService.HasInputPort(Node))
             {
                 InputPort = InstantiatePort(Orientation.Horizontal, Direction.Input, Port.Capacity.Single,
                     typeof(bool));
@@ -62,9 +63,9 @@ namespace MonsterBT.Editor
             }
 
             // Output Part
-            if (BTNodeEditorHelper.HasOutputPort(Node))
+            if (BTNodeEditorService.HasOutputPort(Node))
             {
-                var outputCapacity = BTNodeEditorHelper.GetOutputPortCapacity(Node);
+                var outputCapacity = BTNodeEditorService.GetOutputPortCapacity(Node);
                 OutputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, outputCapacity,
                     typeof(bool));
                 OutputPort.portName = "Output";
@@ -74,7 +75,7 @@ namespace MonsterBT.Editor
 
         private void SetupNodeStyle()
         {
-            var styleClass = BTNodeEditorHelper.GetNodeStyleClass(Node);
+            var styleClass = BTNodeEditorService.GetNodeStyleClass(Node);
             AddToClassList(styleClass);
         }
 
@@ -99,8 +100,11 @@ namespace MonsterBT.Editor
         public override void SetPosition(Rect newPos)
         {
             base.SetPosition(newPos);
-            Node.Position = new Vector2(newPos.xMin, newPos.yMin);
-            EditorUtility.SetDirty(Node);
+            if (Node != null && !Node.Equals(null))
+            {
+                Node.Position = new Vector2(newPos.xMin, newPos.yMin);
+                EditorUtility.SetDirty(Node);
+            }
         }
 
         public void RefreshContent(string propertyName)

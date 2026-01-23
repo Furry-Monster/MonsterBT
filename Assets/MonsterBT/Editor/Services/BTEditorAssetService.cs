@@ -2,16 +2,10 @@ using MonsterBT.Runtime;
 using UnityEditor;
 using UnityEngine;
 
-namespace MonsterBT.Editor
+namespace MonsterBT.Editor.Services
 {
-    /// <summary>
-    /// 编辑器资源管理辅助类，统一处理节点和资源的创建、保存等操作
-    /// </summary>
-    public static class BTEditorAssetHelper
+    public static class BTEditorAssetService
     {
-        /// <summary>
-        /// 创建节点并添加到行为树资源中
-        /// </summary>
         public static BTNode CreateNodeInAsset(BehaviorTree behaviorTree, System.Type nodeType, string nodeName = null)
         {
             if (behaviorTree == null || nodeType == null)
@@ -20,20 +14,32 @@ namespace MonsterBT.Editor
             if (!typeof(BTNode).IsAssignableFrom(nodeType))
                 return null;
 
-            var node = ScriptableObject.CreateInstance(nodeType) as BTNode;
-            if (node == null)
+            var assetPath = AssetDatabase.GetAssetPath(behaviorTree);
+            if (string.IsNullOrEmpty(assetPath))
+            {
+                Debug.LogError("BehaviorTree must be saved to disk before adding nodes.");
                 return null;
+            }
 
-            node.name = nodeName ?? nodeType.Name;
-            AssetDatabase.AddObjectToAsset(node, behaviorTree);
-            MarkDirtyAndSave(behaviorTree);
+            try
+            {
+                var node = ScriptableObject.CreateInstance(nodeType) as BTNode;
+                if (node == null)
+                    return null;
 
-            return node;
+                node.name = nodeName ?? nodeType.Name;
+                AssetDatabase.AddObjectToAsset(node, behaviorTree);
+                MarkDirtyAndSave(behaviorTree);
+
+                return node;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Failed to create node in asset: {ex.Message}");
+                return null;
+            }
         }
 
-        /// <summary>
-        /// 标记对象为脏并保存资源
-        /// </summary>
         public static void MarkDirtyAndSave(UnityEngine.Object obj)
         {
             if (obj == null)
@@ -43,9 +49,6 @@ namespace MonsterBT.Editor
             AssetDatabase.SaveAssets();
         }
 
-        /// <summary>
-        /// 标记多个对象为脏并保存资源
-        /// </summary>
         public static void MarkDirtyAndSave(params UnityEngine.Object[] objects)
         {
             if (objects == null)

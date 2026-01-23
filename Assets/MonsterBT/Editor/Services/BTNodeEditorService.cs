@@ -4,16 +4,10 @@ using System.Reflection;
 using MonsterBT.Runtime;
 using UnityEditor.Experimental.GraphView;
 
-namespace MonsterBT.Editor
+namespace MonsterBT.Editor.Services
 {
-    /// <summary>
-    /// 编辑器辅助类，用于通用化节点操作，避免硬编码节点类型
-    /// </summary>
-    public static class BTNodeEditorHelper
+    public static class BTNodeEditorService
     {
-        /// <summary>
-        /// 获取节点的所有子节点
-        /// </summary>
         public static IEnumerable<BTNode> GetChildren(BTNode node)
         {
             if (node == null)
@@ -46,9 +40,6 @@ namespace MonsterBT.Editor
             }
         }
 
-        /// <summary>
-        /// 设置节点的子节点（用于连接）
-        /// </summary>
         public static bool SetChild(BTNode parent, BTNode child)
         {
             if (parent == null || child == null)
@@ -77,9 +68,6 @@ namespace MonsterBT.Editor
             return false;
         }
 
-        /// <summary>
-        /// 移除节点的子节点（用于断开连接）
-        /// </summary>
         public static bool RemoveChild(BTNode parent, BTNode child)
         {
             if (parent == null || child == null)
@@ -112,9 +100,6 @@ namespace MonsterBT.Editor
             return false;
         }
 
-        /// <summary>
-        /// 检查节点是否有输出端口（可以连接子节点）
-        /// </summary>
         public static bool HasOutputPort(BTNode node)
         {
             if (node == null)
@@ -125,9 +110,6 @@ namespace MonsterBT.Editor
                    node is RootNode;
         }
 
-        /// <summary>
-        /// 检查节点是否有输入端口（可以被连接）
-        /// </summary>
         public static bool HasInputPort(BTNode node)
         {
             if (node == null)
@@ -136,9 +118,6 @@ namespace MonsterBT.Editor
             return !(node is RootNode);
         }
 
-        /// <summary>
-        /// 获取输出端口的容量（单个或多个）
-        /// </summary>
         public static Port.Capacity GetOutputPortCapacity(BTNode node)
         {
             if (node == null)
@@ -153,9 +132,6 @@ namespace MonsterBT.Editor
             return Port.Capacity.Single;
         }
 
-        /// <summary>
-        /// 获取节点的样式类名
-        /// </summary>
         public static string GetNodeStyleClass(BTNode node)
         {
             if (node == null)
@@ -173,9 +149,6 @@ namespace MonsterBT.Editor
             return "node";
         }
 
-        /// <summary>
-        /// 检查节点是否可以删除（RootNode 不能删除）
-        /// </summary>
         public static bool CanDeleteNode(BTNode node)
         {
             return !(node is RootNode);
