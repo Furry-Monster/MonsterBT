@@ -131,7 +131,7 @@ namespace MonsterBT.Editor
 
             if (tree != null)
             {
-                BTAssetService.ValidateAndFixBehaviorTree(tree);
+                BTAssetService.AutoFixBehaviourTree(tree);
             }
 
             PopulateView();
@@ -275,10 +275,9 @@ namespace MonsterBT.Editor
                             childView?.Node != null && !childView.Node.Equals(null))
                         {
                             BTNodeEditorService.RemoveChild(parentView.Node, childView.Node);
-                            // 断开连接时也需要保存
                             if (behaviorTree != null)
                             {
-                                BTEditorAssetService.MarkDirtyAndSave(behaviorTree);
+                                BTEditorAssetService.MarkDirty(behaviorTree);
                             }
                         }
                     }
@@ -347,11 +346,10 @@ namespace MonsterBT.Editor
                     }
                 }
 
-                // 如果有节点被删除，验证并保存资源
                 if (nodesToRemove.Count > 0 && behaviorTree != null)
                 {
-                    BTAssetService.ValidateAndFixBehaviorTree(behaviorTree);
-                    BTEditorAssetService.MarkDirtyAndSave(behaviorTree);
+                    BTAssetService.AutoFixBehaviourTree(behaviorTree);
+                    BTEditorAssetService.MarkDirty(behaviorTree);
                 }
             }
 
@@ -377,10 +375,9 @@ namespace MonsterBT.Editor
                     }
                 }
 
-                // 如果有连接变更，保存资源
                 if (connectionChanged && behaviorTree != null)
                 {
-                    BTEditorAssetService.MarkDirtyAndSave(behaviorTree);
+                    BTEditorAssetService.MarkDirty(behaviorTree);
                 }
             }
 
@@ -569,7 +566,7 @@ namespace MonsterBT.Editor
                 }
 
                 AssetDatabase.AddObjectToAsset(duplicatedNode, behaviorTree);
-                BTEditorAssetService.MarkDirtyAndSave(behaviorTree);
+                BTEditorAssetService.MarkDirty(behaviorTree);
 
                 var duplicatedView = CreateNodeViewFromNode(duplicatedNode);
                 if (duplicatedView != null)
@@ -637,9 +634,8 @@ namespace MonsterBT.Editor
                 Debug.LogError($"Failed to destroy node: {ex.Message}");
             }
 
-            // 验证并保存资源
-            BTAssetService.ValidateAndFixBehaviorTree(behaviorTree);
-            BTEditorAssetService.MarkDirtyAndSave(behaviorTree);
+            BTAssetService.AutoFixBehaviourTree(behaviorTree);
+            BTEditorAssetService.MarkDirty(behaviorTree);
         }
 
         private void PasteNode()
@@ -666,7 +662,7 @@ namespace MonsterBT.Editor
                 }
 
                 AssetDatabase.AddObjectToAsset(pastedNode, behaviorTree);
-                BTEditorAssetService.MarkDirtyAndSave(behaviorTree);
+                BTEditorAssetService.MarkDirty(behaviorTree);
 
                 var pastedView = CreateNodeViewFromNode(pastedNode);
                 if (pastedView != null)
@@ -714,7 +710,7 @@ namespace MonsterBT.Editor
             behaviorTree.Blackboard.AddVariable(varName, varType, defaultValue);
 
             RefreshBlackboardView();
-            BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
+            BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
         }
 
 
@@ -796,7 +792,7 @@ namespace MonsterBT.Editor
                 toggle.RegisterValueChangedCallback(evt =>
                 {
                     behaviorTree.Blackboard.SetBool(varName, evt.newValue);
-                    BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
+                    BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
                 });
                 return toggle;
             }
@@ -810,7 +806,7 @@ namespace MonsterBT.Editor
                 floatField.RegisterValueChangedCallback(evt =>
                 {
                     behaviorTree.Blackboard.SetFloat(varName, evt.newValue);
-                    BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
+                    BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
                 });
                 return floatField;
             }
@@ -824,7 +820,7 @@ namespace MonsterBT.Editor
                 textField.RegisterValueChangedCallback(evt =>
                 {
                     behaviorTree.Blackboard.SetString(varName, evt.newValue);
-                    BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
+                    BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
                 });
                 return textField;
             }
@@ -838,7 +834,7 @@ namespace MonsterBT.Editor
                 vector3Field.RegisterValueChangedCallback(evt =>
                 {
                     behaviorTree.Blackboard.SetVector3(varName, evt.newValue);
-                    BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
+                    BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
                 });
                 return vector3Field;
             }
@@ -853,7 +849,7 @@ namespace MonsterBT.Editor
                 objectField.RegisterValueChangedCallback(evt =>
                 {
                     behaviorTree.Blackboard.SetGameObject(varName, evt.newValue as GameObject);
-                    BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
+                    BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
                 });
                 return objectField;
             }
@@ -867,7 +863,7 @@ namespace MonsterBT.Editor
 
             behaviorTree.Blackboard.RemoveVariable(varName);
             RefreshBlackboardView();
-            BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
+            BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
         }
 
         public void RenameBlackboardVariable(string oldName, string newName)
@@ -888,7 +884,7 @@ namespace MonsterBT.Editor
 
             behaviorTree.Blackboard.RenameVariable(oldName, newName);
             RefreshBlackboardView();
-            BTEditorAssetService.MarkDirtyAndSave(behaviorTree.Blackboard);
+            BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
         }
 
         private static readonly Dictionary<Type, (object defaultValue, string displayName)> TypeInfo =

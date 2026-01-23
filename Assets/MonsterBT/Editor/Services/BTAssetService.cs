@@ -10,17 +10,17 @@ namespace MonsterBT.Editor.Services
 {
     public static class BTAssetService
     {
-        public static bool ValidateAndFixBehaviorTree(BehaviorTree behaviorTree)
+        public static bool AutoFixBehaviourTree(BehaviorTree behaviorTree)
         {
             if (behaviorTree == null)
                 return false;
 
-            var needsSave = false;
+            var modified = false;
 
             if (behaviorTree.Blackboard == null)
             {
                 BTBehaviorTreeService.EnsureBlackboardExists(behaviorTree);
-                needsSave = true;
+                modified = true;
             }
 
             if (behaviorTree.RootNode == null)
@@ -34,30 +34,27 @@ namespace MonsterBT.Editor.Services
                 if (!string.IsNullOrEmpty(assetPath))
                 {
                     AssetDatabase.AddObjectToAsset(rootNode, behaviorTree);
-                    needsSave = true;
+                    modified = true;
                 }
             }
 
-            needsSave |= CleanupDestroyedNodeReferences(behaviorTree);
-            needsSave |= ValidateNodeConnections(behaviorTree);
+            modified |= CleanupDestroyedNodeReferences(behaviorTree);
+            modified |= ValidateNodeConnections(behaviorTree);
 
-            if (needsSave)
-            {
+            if (modified)
                 EditorUtility.SetDirty(behaviorTree);
-                AssetDatabase.SaveAssets();
-            }
 
-            return needsSave;
+            return modified;
         }
 
         private static bool CleanupDestroyedNodeReferences(BehaviorTree behaviorTree)
         {
-            var needsSave = false;
+            var modified = false;
 
             if (behaviorTree.RootNode != null && behaviorTree.RootNode.Equals(null))
             {
                 behaviorTree.RootNode = null;
-                needsSave = true;
+                modified = true;
             }
 
             var allNodes = GetAllNodesInAsset(behaviorTree);
@@ -66,15 +63,15 @@ namespace MonsterBT.Editor.Services
                 if (node == null || node.Equals(null))
                     continue;
 
-                needsSave |= CleanupNodeChildren(node);
+                modified |= CleanupNodeChildren(node);
             }
 
-            return needsSave;
+            return modified;
         }
 
         private static bool CleanupNodeChildren(BTNode node)
         {
-            var needsSave = false;
+            var modified = false;
 
             var childrenProperty = node.GetType().GetProperty("Children",
                 BindingFlags.Public | BindingFlags.Instance);
@@ -82,19 +79,15 @@ namespace MonsterBT.Editor.Services
             {
                 if (childrenProperty.GetValue(node) is IList children)
                 {
-                    var toRemove = new List<BTNode>();
-                    foreach (BTNode child in children)
-                    {
-                        if (child == null || child.Equals(null))
-                        {
-                            toRemove.Add(child);
-                        }
-                    }
+                    var toRemove = children
+                        .Cast<BTNode>()
+                        .Where(child => child == null || child.Equals(null))
+                        .ToList();
 
                     foreach (var child in toRemove)
                     {
                         children.Remove(child);
-                        needsSave = true;
+                        modified = true;
                     }
                 }
             }
@@ -107,16 +100,16 @@ namespace MonsterBT.Editor.Services
                 if (child != null && child.Equals(null))
                 {
                     childProperty.SetValue(node, null);
-                    needsSave = true;
+                    modified = true;
                 }
             }
 
-            return needsSave;
+            return modified;
         }
 
         private static bool ValidateNodeConnections(BehaviorTree behaviorTree)
         {
-            var needsSave = false;
+            var modified = false;
             var allNodes = GetAllNodesInAsset(behaviorTree).ToHashSet();
 
             foreach (var node in allNodes)
@@ -129,17 +122,17 @@ namespace MonsterBT.Editor.Services
                 {
                     if (child == null || child.Equals(null))
                     {
-                        needsSave |= CleanupNodeChildren(node);
+                        modified |= CleanupNodeChildren(node);
                     }
                     else if (!allNodes.Contains(child))
                     {
                         BTNodeEditorService.RemoveChild(node, child);
-                        needsSave = true;
+                        modified = true;
                     }
                 }
             }
 
-            return needsSave;
+            return modified;
         }
 
         private static IEnumerable<BTNode> GetAllNodesInAsset(BehaviorTree behaviorTree)

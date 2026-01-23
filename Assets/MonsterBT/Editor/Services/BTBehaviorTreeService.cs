@@ -37,6 +37,7 @@ namespace MonsterBT.Editor.Services
             if (tree == null)
                 return;
 
+            BTAssetService.AutoFixBehaviourTree(tree);
             EditorUtility.SetDirty(tree);
             AssetDatabase.SaveAssets();
             Debug.Log("Behavior tree saved.");
@@ -56,7 +57,6 @@ namespace MonsterBT.Editor.Services
             {
                 AssetDatabase.AddObjectToAsset(blackboard, tree);
                 EditorUtility.SetDirty(tree);
-                AssetDatabase.SaveAssets();
             }
         }
     }

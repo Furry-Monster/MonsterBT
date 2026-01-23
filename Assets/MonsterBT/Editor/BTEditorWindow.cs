@@ -151,13 +151,6 @@ namespace MonsterBT.Editor
 
         public void OnDestroy()
         {
-            // 窗口关闭前验证并保存资源
-            if (currentBehaviorTree != null)
-            {
-                BTAssetService.ValidateAndFixBehaviorTree(currentBehaviorTree);
-                BTEditorAssetService.MarkDirtyAndSave(currentBehaviorTree);
-            }
-
             BTEditorEventBus.ClearAll();
         }
 
@@ -196,7 +189,7 @@ namespace MonsterBT.Editor
             {
                 BTBehaviorTreeService.EnsureBlackboardExists(behaviorTree);
                 // 验证资源完整性
-                BTAssetService.ValidateAndFixBehaviorTree(behaviorTree);
+                BTAssetService.AutoFixBehaviourTree(behaviorTree);
             }
         }
     }

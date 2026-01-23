@@ -29,7 +29,7 @@ namespace MonsterBT.Editor.Services
 
                 node.name = nodeName ?? nodeType.Name;
                 AssetDatabase.AddObjectToAsset(node, behaviorTree);
-                MarkDirtyAndSave(behaviorTree);
+                MarkDirty(behaviorTree);
 
                 return node;
             }
@@ -40,16 +40,15 @@ namespace MonsterBT.Editor.Services
             }
         }
 
-        public static void MarkDirtyAndSave(Object obj)
+        public static void MarkDirty(Object obj)
         {
             if (obj == null)
                 return;
 
             EditorUtility.SetDirty(obj);
-            AssetDatabase.SaveAssets();
         }
 
-        public static void MarkDirtyAndSave(params Object[] objects)
+        public static void MarkDirty(params Object[] objects)
         {
             if (objects == null)
                 return;
@@ -59,8 +58,6 @@ namespace MonsterBT.Editor.Services
                 if (obj != null)
                     EditorUtility.SetDirty(obj);
             }
-
-            AssetDatabase.SaveAssets();
         }
     }
 }
