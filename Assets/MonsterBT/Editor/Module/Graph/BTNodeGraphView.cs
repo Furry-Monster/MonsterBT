@@ -53,6 +53,8 @@ namespace MonsterBT.Editor
             AddToClassList("node-graph-view");
 
             graphViewChanged += OnGraphViewChanged;
+            RegisterCallback<ExecuteCommandEvent>(OnExecuteCommand);
+            RegisterCallback<ValidateCommandEvent>(OnValidateCommand);
 
             PopulateView();
         }
@@ -60,6 +62,67 @@ namespace MonsterBT.Editor
         ~BTNodeGraphView()
         {
             graphViewChanged -= OnGraphViewChanged;
+            UnregisterCallback<ExecuteCommandEvent>(OnExecuteCommand);
+            UnregisterCallback<ValidateCommandEvent>(OnValidateCommand);
+        }
+
+        private void OnExecuteCommand(ExecuteCommandEvent evt)
+        {
+            var commandName = evt.commandName;
+
+            switch (commandName)
+            {
+                case "Copy":
+                    CopySelectedNodes();
+                    evt.StopPropagation();
+                    break;
+
+                case "Paste":
+                    PasteNode();
+                    evt.StopPropagation();
+                    break;
+
+                case "Cut":
+                    CutSelectedNodes();
+                    evt.StopPropagation();
+                    break;
+
+                case "Delete":
+                case "SoftDelete":
+                    DeleteSelectedNodes();
+                    evt.StopPropagation();
+                    break;
+
+                case "Duplicate":
+                    DuplicateSelectedNodes();
+                    evt.StopPropagation();
+                    break;
+            }
+        }
+
+        private void OnValidateCommand(ValidateCommandEvent evt)
+        {
+            var commandName = evt.commandName;
+
+            switch (commandName)
+            {
+                case "Paste":
+                    // 只有在有复制节点时才允许粘贴
+                    if (copiedNode != null)
+                        evt.StopPropagation();
+                    break;
+
+                case "Copy":
+                case "Cut":
+                case "Delete":
+                case "SoftDelete":
+                case "Duplicate":
+                    // 只有在有选中节点时才允许这些命令
+                    if (selection.Count > 0)
+                        evt.StopPropagation();
+
+                    break;
+            }
         }
 
         public void SetBehaviorTree(BehaviorTree tree)
@@ -336,6 +399,56 @@ namespace MonsterBT.Editor
 
         #endregion
 
+        #region HotKey Methods
+
+        /// <summary>
+        /// 复制选中的节点
+        /// </summary>
+        private void CopySelectedNodes()
+        {
+            var selectedNodes = selection.OfType<BTNodeView>().ToList();
+            if (selectedNodes.Count > 0)
+            {
+                // 复制第一个选中的节点（保持简单，后续可以扩展为多选）
+                copiedNode = selectedNodes[0].Node;
+            }
+        }
+
+        /// <summary>
+        /// 剪切选中的节点
+        /// </summary>
+        private void CutSelectedNodes()
+        {
+            CopySelectedNodes();
+            DeleteSelectedNodes();
+        }
+
+        /// <summary>
+        /// 删除选中的节点
+        /// </summary>
+        private void DeleteSelectedNodes()
+        {
+            var selectedNodes = selection.OfType<BTNodeView>().ToList();
+            foreach (var nodeView in selectedNodes)
+            {
+                DeleteNode(nodeView);
+            }
+        }
+
+        /// <summary>
+        /// 重复选中的节点
+        /// </summary>
+        private void DuplicateSelectedNodes()
+        {
+            var selectedNodes = selection.OfType<BTNodeView>().ToList();
+            foreach (var nodeView in selectedNodes)
+            {
+                DuplicateNode(nodeView);
+            }
+        }
+
+        #endregion
+
         #region ContextMenu Methods
 
         private BTNode copiedNode; // 拷贝缓冲
@@ -430,6 +543,7 @@ namespace MonsterBT.Editor
         {
             copiedNode = nodeView.Node;
         }
+
 
         private void CutNode(BTNodeView nodeView)
         {
