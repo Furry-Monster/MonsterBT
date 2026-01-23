@@ -158,7 +158,7 @@ namespace MonsterBT.Editor
                 AddElement(nodeView);
                 return nodeView;
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Debug.LogWarning($"Failed to create node view for node: {ex.Message}");
                 return null;
@@ -229,11 +229,20 @@ namespace MonsterBT.Editor
                     }
                 }
 
-                // 对于删除的节点，删除所有相关的边
+                // 对于删除的节点，执行完整的删除逻辑
                 foreach (var nodeView in nodesToRemove)
                 {
                     if (nodeView?.Node == null || nodeView.Node.Equals(null))
                         continue;
+
+                    // 检查是否可以删除（RootNode 不能删除）
+                    if (!BTNodeEditorHelper.CanDeleteNode(nodeView.Node))
+                    {
+                        Debug.LogWarning("Cannot delete root node!");
+                        // 将节点重新添加到视图中，防止被删除
+                        AddElement(nodeView);
+                        continue;
+                    }
 
                     // 从字典中移除
                     nodeViews.Remove(nodeView.Node);
@@ -252,20 +261,36 @@ namespace MonsterBT.Editor
                     }
 
                     // 从父节点的子节点列表中移除
+                    var node = nodeView.Node;
                     foreach (var edge in edgesToRemove)
                     {
                         var parentView = edge.output.node as BTNodeView;
                         var childView = edge.input.node as BTNodeView;
 
                         if (parentView?.Node != null && !parentView.Node.Equals(null) &&
-                            childView == nodeView && nodeView.Node != null)
+                            childView == nodeView && node != null)
                         {
-                            BTNodeEditorHelper.RemoveChild(parentView.Node, nodeView.Node);
+                            BTNodeEditorHelper.RemoveChild(parentView.Node, node);
                         }
                     }
 
-                    // 如果节点不是通过 DeleteNode 删除的（比如通过 UI 直接删除），需要销毁节点对象
-                    // 但这里我们不销毁，因为 DeleteNode 已经处理了
+                    // 查找所有可能包含此节点的父节点并移除
+                    foreach (var (parentNode, parentView) in nodeViews)
+                    {
+                        if (parentNode == null || parentNode.Equals(null))
+                            continue;
+
+                        BTNodeEditorHelper.RemoveChild(parentNode, node);
+                    }
+
+                    // 销毁节点对象（通过 Delete 热键删除时需要实际销毁）
+                    Object.DestroyImmediate(node, true);
+                }
+
+                // 如果有节点被删除，保存资源
+                if (nodesToRemove.Count > 0 && behaviorTree != null)
+                {
+                    BTEditorAssetHelper.MarkDirtyAndSave(behaviorTree);
                 }
             }
 
