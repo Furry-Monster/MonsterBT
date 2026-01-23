@@ -1,12 +1,11 @@
 using System;
+using MonsterBT.Editor.Services;
 using UnityEngine.UIElements;
 
 namespace MonsterBT.Editor
 {
     public class BTNodeLibrary : VisualElement
     {
-        public event Action<Type> OnNodeRequested;
-
         public BTNodeLibrary()
         {
             var styleSheet = BTEditorResources.LoadStyleSheet("BTEditorStyle.uss");
@@ -67,7 +66,7 @@ namespace MonsterBT.Editor
             typeLabel.AddToClassList("blackboard-type");
             item.Add(typeLabel);
 
-            item.RegisterCallback<ClickEvent>(_ => OnNodeRequested?.Invoke(nodeType));
+            item.RegisterCallback<ClickEvent>(_ => BTEditorEventBus.PublishNodeRequested(nodeType));
             item.RegisterCallback<MouseDownEvent>(_ => { });
 
             return item;

@@ -153,12 +153,7 @@ namespace MonsterBT.Editor
 
         public void OnDestroy()
         {
-            if (graphView == null || inspector == null)
-                return;
-
-            graphView.OnNodeSelected -= inspector.SetSelectedNode;
-            graphView.OnNodeDeselected -= inspector.ClearSelection;
-            inspector.OnPropertyChanged -= graphView.HandlePropertyChanged;
+            BTEditorEventBus.ClearAll();
         }
 
         private void SetupUIElements()
@@ -171,26 +166,23 @@ namespace MonsterBT.Editor
 
         private void SetupEventHandlers()
         {
-            if (toolbar != null)
+            BTEditorEventBus.OnBehaviorTreeChanged += OnBehaviorTreeChanged;
+            BTEditorEventBus.OnCreateNewRequested += OnCreateNewBehaviorTree;
+            BTEditorEventBus.OnSaveRequested += OnSaveBehaviorTree;
+            BTEditorEventBus.OnAutoLayoutRequested += OnAutoLayoutNodes;
+            BTEditorEventBus.OnPlayToggleRequested += OnTogglePlayMode;
+            BTEditorEventBus.OnDebugToggleRequested += OnToggleDebugMode;
+
+            if (inspector != null)
             {
-                toolbar.OnBehaviorTreeChanged += OnBehaviorTreeChanged;
-                toolbar.OnCreateNewRequested += OnCreateNewBehaviorTree;
-                toolbar.OnSaveRequested += OnSaveBehaviorTree;
-                toolbar.OnAutoLayoutRequested += OnAutoLayoutNodes;
-                toolbar.OnPlayToggleRequested += OnTogglePlayMode;
-                toolbar.OnDebugToggleRequested += OnToggleDebugMode;
+                BTEditorEventBus.OnNodeSelected += inspector.SetSelectedNode;
+                BTEditorEventBus.OnNodeDeselected += inspector.ClearSelection;
             }
 
-            if (graphView != null && inspector != null)
+            if (graphView != null)
             {
-                graphView.OnNodeSelected += inspector.SetSelectedNode;
-                graphView.OnNodeDeselected += inspector.ClearSelection;
-                inspector.OnPropertyChanged += graphView.HandlePropertyChanged;
-            }
-
-            if (nodeLibrary != null && graphView != null)
-            {
-                nodeLibrary.OnNodeRequested += graphView.CreateNode;
+                BTEditorEventBus.OnPropertyChanged += graphView.HandlePropertyChanged;
+                BTEditorEventBus.OnNodeRequested += graphView.CreateNode;
             }
         }
 

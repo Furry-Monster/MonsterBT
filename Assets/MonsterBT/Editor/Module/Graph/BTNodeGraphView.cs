@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MonsterBT.Editor.Services;
 using MonsterBT.Runtime;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
@@ -681,9 +682,6 @@ namespace MonsterBT.Editor
 
         #region Inspector Methods
 
-        public event Action<BTNode> OnNodeSelected;
-        public event Action OnNodeDeselected;
-
         private BTNode lastSelectedNode;
 
         // TODO:从100ms的轮询优化到其他方式
@@ -699,11 +697,11 @@ namespace MonsterBT.Editor
 
                 if (currentSelectedNode != null)
                 {
-                    OnNodeSelected?.Invoke(currentSelectedNode);
+                    BTEditorEventBus.PublishNodeSelected(currentSelectedNode);
                 }
                 else
                 {
-                    OnNodeDeselected?.Invoke();
+                    BTEditorEventBus.PublishNodeDeselected();
                 }
             }
         }

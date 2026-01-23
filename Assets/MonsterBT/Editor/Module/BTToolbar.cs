@@ -1,4 +1,4 @@
-using System;
+using MonsterBT.Editor.Services;
 using MonsterBT.Runtime;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
@@ -9,13 +9,6 @@ namespace MonsterBT.Editor
     public class BTToolbar : VisualElement
     {
         private readonly ObjectField behaviorTreeField;
-
-        public event Action<BehaviorTree> OnBehaviorTreeChanged;
-        public event Action OnCreateNewRequested;
-        public event Action OnSaveRequested;
-        public event Action OnAutoLayoutRequested;
-        public event Action OnPlayToggleRequested;
-        public event Action OnDebugToggleRequested;
 
         public BTToolbar()
         {
@@ -33,27 +26,27 @@ namespace MonsterBT.Editor
 
             var createBtn = new Button { name = "create-button", text = "Create New" };
             createBtn.AddToClassList("toolbar-button");
-            createBtn.clicked += () => OnCreateNewRequested?.Invoke();
+            createBtn.clicked += () => BTEditorEventBus.PublishCreateNewRequested();
             toolbar.Add(createBtn);
 
             var saveBtn = new Button { name = "save-button", text = "Save" };
             saveBtn.AddToClassList("toolbar-button");
-            saveBtn.clicked += () => OnSaveRequested?.Invoke();
+            saveBtn.clicked += () => BTEditorEventBus.PublishSaveRequested();
             toolbar.Add(saveBtn);
 
             var autoLayoutBtn = new Button { name = "auto-layout-button", text = "Auto Layout" };
             autoLayoutBtn.AddToClassList("toolbar-button");
-            autoLayoutBtn.clicked += () => OnAutoLayoutRequested?.Invoke();
+            autoLayoutBtn.clicked += () => BTEditorEventBus.PublishAutoLayoutRequested();
             toolbar.Add(autoLayoutBtn);
 
             var playBtn = new Button { name = "play-button", text = "▶ Play" };
             playBtn.AddToClassList("toolbar-button");
-            playBtn.clicked += () => OnPlayToggleRequested?.Invoke();
+            playBtn.clicked += () => BTEditorEventBus.PublishPlayToggleRequested();
             toolbar.Add(playBtn);
 
             var debugBtn = new Button { name = "debug-button", text = "# Debug" };
             debugBtn.AddToClassList("toolbar-button");
-            debugBtn.clicked += () => OnDebugToggleRequested?.Invoke();
+            debugBtn.clicked += () => BTEditorEventBus.PublishDebugToggleRequested();
             toolbar.Add(debugBtn);
 
             Add(toolbar);
@@ -67,7 +60,7 @@ namespace MonsterBT.Editor
 
         private void OnBehaviorTreeChangedInternal(ChangeEvent<Object> changeEvent)
         {
-            OnBehaviorTreeChanged?.Invoke(changeEvent.newValue as BehaviorTree);
+            BTEditorEventBus.PublishBehaviorTreeChanged(changeEvent.newValue as BehaviorTree);
         }
     }
 }

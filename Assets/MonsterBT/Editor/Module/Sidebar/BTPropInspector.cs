@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using MonsterBT.Editor.Services;
 using MonsterBT.Runtime;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -79,7 +80,7 @@ namespace MonsterBT.Editor
                 Undo.RecordObject(node, "Change Node Name");
                 node.name = evt.newValue;
                 EditorUtility.SetDirty(node);
-                OnPropertyChanged?.Invoke(node, "name");
+                BTEditorEventBus.PublishPropertyChanged(node, "name");
             });
             contentScrollView.Add(nameField);
 
@@ -95,7 +96,7 @@ namespace MonsterBT.Editor
                 Undo.RecordObject(node, "Change Node Description");
                 node.Description = evt.newValue;
                 EditorUtility.SetDirty(node);
-                OnPropertyChanged?.Invoke(node, "description");
+                BTEditorEventBus.PublishPropertyChanged(node, "description");
             });
             contentScrollView.Add(descriptionField);
 
@@ -181,8 +182,6 @@ namespace MonsterBT.Editor
 
         #region Field Elements Creator (可扩展)
 
-        public event Action<BTNode, string> OnPropertyChanged;
-
         private TextField CreateStringField(FieldInfo field, BTNode node, string displayName)
         {
             var textField = new TextField(displayName)
@@ -195,7 +194,7 @@ namespace MonsterBT.Editor
                 Undo.RecordObject(node, $"Change {displayName}");
                 field.SetValue(node, evt.newValue);
                 EditorUtility.SetDirty(node);
-                OnPropertyChanged?.Invoke(node, displayName);
+                BTEditorEventBus.PublishPropertyChanged(node, displayName);
             });
 
             return textField;
@@ -213,7 +212,7 @@ namespace MonsterBT.Editor
                 Undo.RecordObject(node, $"Change {displayName}");
                 field.SetValue(node, evt.newValue);
                 EditorUtility.SetDirty(node);
-                OnPropertyChanged?.Invoke(node, displayName);
+                BTEditorEventBus.PublishPropertyChanged(node, displayName);
             });
 
             return floatField;
@@ -231,7 +230,7 @@ namespace MonsterBT.Editor
                 Undo.RecordObject(node, $"Change {displayName}");
                 field.SetValue(node, evt.newValue);
                 EditorUtility.SetDirty(node);
-                OnPropertyChanged?.Invoke(node, displayName);
+                BTEditorEventBus.PublishPropertyChanged(node, displayName);
             });
 
             return intField;
@@ -249,7 +248,7 @@ namespace MonsterBT.Editor
                 Undo.RecordObject(node, $"Change {displayName}");
                 field.SetValue(node, evt.newValue);
                 EditorUtility.SetDirty(node);
-                OnPropertyChanged?.Invoke(node, displayName);
+                BTEditorEventBus.PublishPropertyChanged(node, displayName);
             });
 
             return toggle;
@@ -267,7 +266,7 @@ namespace MonsterBT.Editor
                 Undo.RecordObject(node, $"Change {displayName}");
                 field.SetValue(node, evt.newValue);
                 EditorUtility.SetDirty(node);
-                OnPropertyChanged?.Invoke(node, displayName);
+                BTEditorEventBus.PublishPropertyChanged(node, displayName);
             });
 
             return vector3Field;
@@ -286,7 +285,7 @@ namespace MonsterBT.Editor
                 Undo.RecordObject(node, $"Change {displayName}");
                 field.SetValue(node, evt.newValue);
                 EditorUtility.SetDirty(node);
-                OnPropertyChanged?.Invoke(node, displayName);
+                BTEditorEventBus.PublishPropertyChanged(node, displayName);
             });
 
             return objectField;
@@ -302,7 +301,7 @@ namespace MonsterBT.Editor
                 Undo.RecordObject(node, $"Change {displayName}");
                 field.SetValue(node, evt.newValue);
                 EditorUtility.SetDirty(node);
-                OnPropertyChanged?.Invoke(node, displayName);
+                BTEditorEventBus.PublishPropertyChanged(node, displayName);
             });
 
             return enumField;
