@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: DebugLogAction
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Actions.DebugLogAction
   description: 
-  position: {x: 795.19995, y: -16.000015}
-  message: Yes
+  position: {x: 747.2, y: 36.800003}
+  message: No
   logType: 3
 --- !u!114 &-4966644557814865716
 MonoBehaviour:
@@ -59,7 +59,7 @@ MonoBehaviour:
   m_Name: Parallel
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Composite.Parallel
   description: 
-  position: {x: 624, y: 100.000046}
+  position: {x: 506.89404, y: 145.16202}
   children:
   - {fileID: -7343272201544024855}
   finishMode: 0
@@ -78,5 +78,5 @@ MonoBehaviour:
   m_Name: Root
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.RootNode
   description: 
-  position: {x: 397.6, y: 100}
+  position: {x: 280.49405, y: 145.16202}
   child: {fileID: 3119381733163150503}

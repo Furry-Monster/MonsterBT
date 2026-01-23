@@ -169,145 +169,16 @@ namespace MonsterBT.Editor
 
             return fieldType switch
             {
-                var t when t == typeof(string) => CreateStringField(field, node, fieldName),
-                var t when t == typeof(float) => CreateFloatField(field, node, fieldName),
-                var t when t == typeof(int) => CreateIntField(field, node, fieldName),
-                var t when t == typeof(bool) => CreateBoolField(field, node, fieldName),
-                var t when t == typeof(Vector3) => CreateVector3Field(field, node, fieldName),
-                var t when t == typeof(GameObject) => CreateGameObjectField(field, node, fieldName),
-                var t when t.IsEnum => CreateEnumField(field, node, fieldName),
+                var t when t == typeof(string) => BTFieldEditorHelper.CreateStringField(field, node, fieldName),
+                var t when t == typeof(float) => BTFieldEditorHelper.CreateFloatField(field, node, fieldName),
+                var t when t == typeof(int) => BTFieldEditorHelper.CreateIntField(field, node, fieldName),
+                var t when t == typeof(bool) => BTFieldEditorHelper.CreateBoolField(field, node, fieldName),
+                var t when t == typeof(Vector3) => BTFieldEditorHelper.CreateVector3Field(field, node, fieldName),
+                var t when t == typeof(GameObject) => BTFieldEditorHelper.CreateGameObjectField(field, node, fieldName),
+                var t when t.IsEnum => BTFieldEditorHelper.CreateEnumField(field, node, fieldName),
                 _ => null
             };
         }
-
-        #region Field Elements Creator (可扩展)
-
-        private TextField CreateStringField(FieldInfo field, BTNode node, string displayName)
-        {
-            var textField = new TextField(displayName)
-            {
-                value = (string)field.GetValue(node) ?? ""
-            };
-
-            textField.RegisterValueChangedCallback(evt =>
-            {
-                Undo.RecordObject(node, $"Change {displayName}");
-                field.SetValue(node, evt.newValue);
-                EditorUtility.SetDirty(node);
-                BTEditorEventBus.PublishPropertyChanged(node, displayName);
-            });
-
-            return textField;
-        }
-
-        private FloatField CreateFloatField(FieldInfo field, BTNode node, string displayName)
-        {
-            var floatField = new FloatField(displayName)
-            {
-                value = (float)field.GetValue(node)
-            };
-
-            floatField.RegisterValueChangedCallback(evt =>
-            {
-                Undo.RecordObject(node, $"Change {displayName}");
-                field.SetValue(node, evt.newValue);
-                EditorUtility.SetDirty(node);
-                BTEditorEventBus.PublishPropertyChanged(node, displayName);
-            });
-
-            return floatField;
-        }
-
-        private IntegerField CreateIntField(FieldInfo field, BTNode node, string displayName)
-        {
-            var intField = new IntegerField(displayName)
-            {
-                value = (int)field.GetValue(node)
-            };
-
-            intField.RegisterValueChangedCallback(evt =>
-            {
-                Undo.RecordObject(node, $"Change {displayName}");
-                field.SetValue(node, evt.newValue);
-                EditorUtility.SetDirty(node);
-                BTEditorEventBus.PublishPropertyChanged(node, displayName);
-            });
-
-            return intField;
-        }
-
-        private Toggle CreateBoolField(FieldInfo field, BTNode node, string displayName)
-        {
-            var toggle = new Toggle(displayName)
-            {
-                value = (bool)field.GetValue(node),
-            };
-
-            toggle.RegisterValueChangedCallback(evt =>
-            {
-                Undo.RecordObject(node, $"Change {displayName}");
-                field.SetValue(node, evt.newValue);
-                EditorUtility.SetDirty(node);
-                BTEditorEventBus.PublishPropertyChanged(node, displayName);
-            });
-
-            return toggle;
-        }
-
-        private Vector3Field CreateVector3Field(FieldInfo field, BTNode node, string displayName)
-        {
-            var vector3Field = new Vector3Field(displayName)
-            {
-                value = (Vector3)field.GetValue(node)
-            };
-
-            vector3Field.RegisterValueChangedCallback(evt =>
-            {
-                Undo.RecordObject(node, $"Change {displayName}");
-                field.SetValue(node, evt.newValue);
-                EditorUtility.SetDirty(node);
-                BTEditorEventBus.PublishPropertyChanged(node, displayName);
-            });
-
-            return vector3Field;
-        }
-
-        private ObjectField CreateGameObjectField(FieldInfo field, BTNode node, string displayName)
-        {
-            var objectField = new ObjectField(displayName)
-            {
-                objectType = typeof(GameObject),
-                value = (GameObject)field.GetValue(node)
-            };
-
-            objectField.RegisterValueChangedCallback(evt =>
-            {
-                Undo.RecordObject(node, $"Change {displayName}");
-                field.SetValue(node, evt.newValue);
-                EditorUtility.SetDirty(node);
-                BTEditorEventBus.PublishPropertyChanged(node, displayName);
-            });
-
-            return objectField;
-        }
-
-        private EnumField CreateEnumField(FieldInfo field, BTNode node, string displayName)
-        {
-            var enumValue = (Enum)field.GetValue(node);
-            var enumField = new EnumField(displayName, enumValue);
-
-            enumField.RegisterValueChangedCallback(evt =>
-            {
-                Undo.RecordObject(node, $"Change {displayName}");
-                field.SetValue(node, evt.newValue);
-                EditorUtility.SetDirty(node);
-                BTEditorEventBus.PublishPropertyChanged(node, displayName);
-            });
-
-            return enumField;
-        }
-
-        #endregion
 
         #endregion
     }
