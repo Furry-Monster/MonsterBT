@@ -1,11 +1,9 @@
-using System;
+using MonsterBT.Editor.Services;
 using MonsterBT.Runtime;
 using UnityEditor;
 using UnityEditor.Callbacks;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Object = UnityEngine.Object;
 
 namespace MonsterBT.Editor
 {
@@ -15,6 +13,7 @@ namespace MonsterBT.Editor
         private BTPropInspector inspector;
         private BTNodeLibrary nodeLibrary;
         private BTToolbar toolbar;
+        private BTStatusBar statusBar;
 
         private BehaviorTree currentBehaviorTree;
 
@@ -56,18 +55,9 @@ namespace MonsterBT.Editor
         {
             currentBehaviorTree = behaviorTree;
 
-            if (behaviorTree != null && behaviorTree.Blackboard == null)
+            if (behaviorTree != null)
             {
-                var blackboard = CreateInstance<Blackboard>();
-                blackboard.name = "Blackboard";
-                behaviorTree.Blackboard = blackboard;
-
-                if (!string.IsNullOrEmpty(AssetDatabase.GetAssetPath(behaviorTree)))
-                {
-                    AssetDatabase.AddObjectToAsset(blackboard, behaviorTree);
-                    EditorUtility.SetDirty(behaviorTree);
-                    AssetDatabase.SaveAssets();
-                }
+                BTBehaviorTreeService.EnsureBlackboardExists(behaviorTree);
             }
 
             toolbar?.SetBehaviorTree(behaviorTree);
@@ -111,22 +101,36 @@ namespace MonsterBT.Editor
                 }
             };
 
+            // L：Node Library
             nodeLibrary = new BTNodeLibrary();
+
+            var centerRightSplit = new TwoPaneSplitView(1, 300, TwoPaneSplitViewOrientation.Horizontal);
+            // M：Graph View
+            CreateGraphView(centerRightSplit);
+            // R：Inspector
+            CreateInspectorPanel(centerRightSplit);
+
             mainContent.Add(nodeLibrary);
+            mainContent.Add(centerRightSplit);
 
-            var rightContent = new TwoPaneSplitView(1, 300, TwoPaneSplitViewOrientation.Horizontal);
-            var graphContainer = new VisualElement { name = "graph-container" };
-            graphContainer.AddToClassList("graph-container");
-            graphContainer.style.flexGrow = 1;
-            rightContent.Add(graphContainer);
-            rightContent.Add(CreateInspectorPanel());
-
-            mainContent.Add(rightContent);
             parent.Add(mainContent);
         }
 
+        private void CreateGraphView(VisualElement parent)
+        {
+            graphView = new BTNodeGraphView();
+            var graphContainer = new VisualElement
+            {
+                name = "graph-container"
+            };
+            graphContainer.AddToClassList("graph-container");
+            graphContainer.style.flexGrow = 1;
+            graphContainer.Add(graphView);
 
-        private VisualElement CreateInspectorPanel()
+            parent.Add(graphContainer);
+        }
+
+        private void CreateInspectorPanel(VisualElement parent)
         {
             var panel = new VisualElement { name = "inspector-panel" };
             panel.AddToClassList("sidebar");
@@ -135,44 +139,15 @@ namespace MonsterBT.Editor
             inspectorTitle.AddToClassList("sidebar-title");
             panel.Add(inspectorTitle);
 
-            var propertiesSection = new VisualElement { name = "node-properties" };
-            propertiesSection.AddToClassList("sidebar-section");
-            var propertiesTitle = new Label("Node Properties");
-            propertiesTitle.AddToClassList("sidebar-title");
-            propertiesSection.Add(propertiesTitle);
-            propertiesSection.Add(new VisualElement { name = "property-container" });
+            inspector = new BTPropInspector();
+            panel.Add(inspector);
 
-            panel.Add(propertiesSection);
-            return panel;
+            parent.Add(panel);
         }
 
         private void CreateStatusBar(VisualElement parent)
         {
-            var statusBar = new VisualElement { name = "status-bar" };
-            statusBar.AddToClassList("status-bar");
-
-            var statusText = new Label("Ready")
-            {
-                name = "status-text",
-                style =
-                {
-                    color = new Color(0.78f, 0.78f, 0.78f),
-                    fontSize = 11
-                }
-            };
-            statusBar.Add(statusText);
-
-            var nodeCount = new Label("Nodes: 0")
-            {
-                name = "node-count",
-                style =
-                {
-                    color = new Color(0.59f, 0.59f, 0.59f),
-                    fontSize = 10
-                }
-            };
-            statusBar.Add(nodeCount);
-
+            statusBar = new BTStatusBar();
             parent.Add(statusBar);
         }
 
@@ -188,23 +163,14 @@ namespace MonsterBT.Editor
 
         private void SetupUIElements()
         {
-            var rootContainer = rootVisualElement.Q<VisualElement>("behavior-tree-editor-root");
-            if (rootContainer == null) return;
+            SetupEventHandlers();
 
-            var graphContainer = rootContainer.Q<VisualElement>("graph-container");
-            if (graphContainer != null)
-            {
-                graphView = new BTNodeGraphView();
-                graphContainer.Add(graphView);
-            }
+            if (currentBehaviorTree != null)
+                SetBehaviorTree(currentBehaviorTree);
+        }
 
-            var propContainer = rootContainer.Q<VisualElement>("property-container");
-            if (propContainer != null)
-            {
-                inspector = new BTPropInspector();
-                propContainer.Add(inspector);
-            }
-
+        private void SetupEventHandlers()
+        {
             if (toolbar != null)
             {
                 toolbar.OnBehaviorTreeChanged += OnBehaviorTreeChanged;
@@ -226,9 +192,6 @@ namespace MonsterBT.Editor
             {
                 nodeLibrary.OnNodeRequested += graphView.CreateNode;
             }
-
-            if (currentBehaviorTree != null)
-                SetBehaviorTree(currentBehaviorTree);
         }
 
         #endregion
@@ -264,37 +227,16 @@ namespace MonsterBT.Editor
 
         private void OnCreateNewBehaviorTree()
         {
-            var tree = CreateInstance<BehaviorTree>();
-            var rootNode = CreateInstance<RootNode>();
-            var blackboard = CreateInstance<Blackboard>();
-
-            rootNode.name = "Root";
-            rootNode.Position = new Vector2(400, 100);
-            blackboard.name = "Blackboard";
-
-            tree.RootNode = rootNode;
-            tree.Blackboard = blackboard;
-            tree.name = "New BehaviorTree";
-
-            var path = EditorUtility.SaveFilePanelInProject("Save Behavior Tree", "NewBehaviorTree", "asset", "");
-            if (string.IsNullOrEmpty(path)) return;
-
-            AssetDatabase.CreateAsset(tree, path);
-            AssetDatabase.AddObjectToAsset(rootNode, tree);
-            AssetDatabase.AddObjectToAsset(blackboard, tree);
-            AssetDatabase.SaveAssets();
-
-            SetBehaviorTree(tree);
+            var tree = BTBehaviorTreeService.CreateNewBehaviorTree();
+            if (tree != null)
+            {
+                SetBehaviorTree(tree);
+            }
         }
 
         private void OnSaveBehaviorTree()
         {
-            if (currentBehaviorTree == null)
-                return;
-
-            EditorUtility.SetDirty(currentBehaviorTree);
-            AssetDatabase.SaveAssets();
-            Debug.Log("Behavior tree saved.");
+            BTBehaviorTreeService.SaveBehaviorTree(currentBehaviorTree);
         }
 
         #endregion

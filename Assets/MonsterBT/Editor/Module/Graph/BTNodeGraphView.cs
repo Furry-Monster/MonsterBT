@@ -464,7 +464,6 @@ namespace MonsterBT.Editor
             }
         }
 
-
         #endregion
 
         #region Blackboard Methods
