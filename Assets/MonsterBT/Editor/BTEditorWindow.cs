@@ -1,13 +1,11 @@
+using System;
 using MonsterBT.Runtime;
-using MonsterBT.Runtime.Actions;
-using MonsterBT.Runtime.Composite;
-using MonsterBT.Runtime.Conditions;
-using MonsterBT.Runtime.Decorator;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
 
 namespace MonsterBT.Editor
 {
@@ -15,7 +13,8 @@ namespace MonsterBT.Editor
     {
         private BTNodeGraphView graphView;
         private BTPropInspector inspector;
-        private ObjectField behaviorTreeField;
+        private BTNodeLibrary nodeLibrary;
+        private BTToolbar toolbar;
 
         private BehaviorTree currentBehaviorTree;
 
@@ -56,13 +55,13 @@ namespace MonsterBT.Editor
         public void SetBehaviorTree(BehaviorTree behaviorTree)
         {
             currentBehaviorTree = behaviorTree;
-            
+
             if (behaviorTree != null && behaviorTree.Blackboard == null)
             {
                 var blackboard = CreateInstance<Blackboard>();
                 blackboard.name = "Blackboard";
                 behaviorTree.Blackboard = blackboard;
-                
+
                 if (!string.IsNullOrEmpty(AssetDatabase.GetAssetPath(behaviorTree)))
                 {
                     AssetDatabase.AddObjectToAsset(blackboard, behaviorTree);
@@ -70,9 +69,8 @@ namespace MonsterBT.Editor
                     AssetDatabase.SaveAssets();
                 }
             }
-            
-            if (behaviorTreeField != null)
-                behaviorTreeField.value = behaviorTree;
+
+            toolbar?.SetBehaviorTree(behaviorTree);
             graphView?.SetBehaviorTree(behaviorTree);
         }
 
@@ -98,44 +96,23 @@ namespace MonsterBT.Editor
 
         private void CreateToolbar(VisualElement parent)
         {
-            var toolbar = new Toolbar { name = "main-toolbar" };
-            toolbar.AddToClassList("editor-toolbar");
-
-            behaviorTreeField = new ObjectField("Behavior Tree Asset") { name = "behavior-tree-field" };
-            behaviorTreeField.AddToClassList("toolbar-field");
-            behaviorTreeField.objectType = typeof(BehaviorTree);
-            toolbar.Add(behaviorTreeField);
-
-            var createBtn = new Button { name = "create-button", text = "Create New" };
-            createBtn.AddToClassList("toolbar-button");
-            toolbar.Add(createBtn);
-
-            var saveBtn = new Button { name = "save-button", text = "Save" };
-            saveBtn.AddToClassList("toolbar-button");
-            toolbar.Add(saveBtn);
-
-            var autoLayoutBtn = new Button { name = "auto-layout-button", text = "Auto Layout" };
-            autoLayoutBtn.AddToClassList("toolbar-button");
-            toolbar.Add(autoLayoutBtn);
-
-            var playBtn = new Button { name = "play-button", text = "▶ Play" };
-            playBtn.AddToClassList("toolbar-button");
-            toolbar.Add(playBtn);
-
-            var debugBtn = new Button { name = "debug-button", text = "# Debug" };
-            debugBtn.AddToClassList("toolbar-button");
-            toolbar.Add(debugBtn);
-
+            toolbar = new BTToolbar();
             parent.Add(toolbar);
         }
 
         private void CreateMainContent(VisualElement parent)
         {
             var mainContent = new TwoPaneSplitView(0, 250, TwoPaneSplitViewOrientation.Horizontal)
-                { name = "main-content" };
-            mainContent.style.flexGrow = 1;
+            {
+                name = "main-content",
+                style =
+                {
+                    flexGrow = 1
+                }
+            };
 
-            mainContent.Add(CreateNodeLibraryPanel());
+            nodeLibrary = new BTNodeLibrary();
+            mainContent.Add(nodeLibrary);
 
             var rightContent = new TwoPaneSplitView(1, 300, TwoPaneSplitViewOrientation.Horizontal);
             var graphContainer = new VisualElement { name = "graph-container" };
@@ -148,55 +125,6 @@ namespace MonsterBT.Editor
             parent.Add(mainContent);
         }
 
-        private VisualElement CreateNodeLibraryPanel()
-        {
-            var panel = new VisualElement { name = "node-library-panel" };
-            panel.AddToClassList("sidebar");
-
-            var title = new Label("Node Library") { name = "node-library-title" };
-            title.AddToClassList("sidebar-title");
-            panel.Add(title);
-
-            var compositeSection = new VisualElement { name = "composite-nodes" };
-            compositeSection.AddToClassList("sidebar-section");
-            var compositeTitle = new Label("Composite Nodes");
-            compositeTitle.AddToClassList("sidebar-title");
-            compositeSection.Add(compositeTitle);
-            compositeSection.Add(CreateNodeListItem("selector-item", "Selector", "Composite"));
-            compositeSection.Add(CreateNodeListItem("sequence-item", "Sequence", "Composite"));
-            panel.Add(compositeSection);
-
-            var decoratorSection = new VisualElement { name = "decorator-nodes" };
-            decoratorSection.AddToClassList("sidebar-section");
-            var decoratorTitle = new Label("Decorator Nodes");
-            decoratorTitle.AddToClassList("sidebar-title");
-            decoratorSection.Add(decoratorTitle);
-            decoratorSection.Add(CreateNodeListItem("inverter-item", "Inverter", "Decorator"));
-            panel.Add(decoratorSection);
-
-            var actionSection = new VisualElement { name = "action-nodes" };
-            actionSection.AddToClassList("sidebar-section");
-            var actionTitle = new Label("Action Nodes");
-            actionTitle.AddToClassList("sidebar-title");
-            actionSection.Add(actionTitle);
-            actionSection.Add(CreateNodeListItem("debug-log-item", "Debug Log", "Action"));
-            actionSection.Add(CreateNodeListItem("wait-item", "Wait", "Action"));
-            actionSection.Add(CreateNodeListItem("move-to-target-item", "Move To Target", "Action"));
-            panel.Add(actionSection);
-
-            return panel;
-        }
-
-        private VisualElement CreateNodeListItem(string name, string labelText, string typeText)
-        {
-            var item = new VisualElement { name = name };
-            item.AddToClassList("node-list-item");
-            item.Add(new Label(labelText));
-            var typeLabel = new Label(typeText) { name = "blackboard-type" };
-            typeLabel.AddToClassList("blackboard-type");
-            item.Add(typeLabel);
-            return item;
-        }
 
         private VisualElement CreateInspectorPanel()
         {
@@ -223,14 +151,26 @@ namespace MonsterBT.Editor
             var statusBar = new VisualElement { name = "status-bar" };
             statusBar.AddToClassList("status-bar");
 
-            var statusText = new Label("Ready") { name = "status-text" };
-            statusText.style.color = new Color(0.78f, 0.78f, 0.78f);
-            statusText.style.fontSize = 11;
+            var statusText = new Label("Ready")
+            {
+                name = "status-text",
+                style =
+                {
+                    color = new Color(0.78f, 0.78f, 0.78f),
+                    fontSize = 11
+                }
+            };
             statusBar.Add(statusText);
 
-            var nodeCount = new Label("Nodes: 0") { name = "node-count" };
-            nodeCount.style.color = new Color(0.59f, 0.59f, 0.59f);
-            nodeCount.style.fontSize = 10;
+            var nodeCount = new Label("Nodes: 0")
+            {
+                name = "node-count",
+                style =
+                {
+                    color = new Color(0.59f, 0.59f, 0.59f),
+                    fontSize = 10
+                }
+            };
             statusBar.Add(nodeCount);
 
             parent.Add(statusBar);
@@ -251,16 +191,6 @@ namespace MonsterBT.Editor
             var rootContainer = rootVisualElement.Q<VisualElement>("behavior-tree-editor-root");
             if (rootContainer == null) return;
 
-            behaviorTreeField = rootContainer.Q<ObjectField>("behavior-tree-field");
-            if (behaviorTreeField != null)
-                behaviorTreeField.RegisterValueChangedCallback(OnBehaviorTreeChanged);
-
-            rootContainer.Q<Button>("create-button")?.RegisterCallback<ClickEvent>(OnCreateNewBehaviorTree);
-            rootContainer.Q<Button>("save-button")?.RegisterCallback<ClickEvent>(OnSaveBehaviorTree);
-            rootContainer.Q<Button>("auto-layout-button")?.RegisterCallback<ClickEvent>(OnAutoLayoutNodes);
-            rootContainer.Q<Button>("play-button")?.RegisterCallback<ClickEvent>(OnTogglePlayMode);
-            rootContainer.Q<Button>("debug-button")?.RegisterCallback<ClickEvent>(OnToggleDebugMode);
-
             var graphContainer = rootContainer.Q<VisualElement>("graph-container");
             if (graphContainer != null)
             {
@@ -275,6 +205,16 @@ namespace MonsterBT.Editor
                 propContainer.Add(inspector);
             }
 
+            if (toolbar != null)
+            {
+                toolbar.OnBehaviorTreeChanged += OnBehaviorTreeChanged;
+                toolbar.OnCreateNewRequested += OnCreateNewBehaviorTree;
+                toolbar.OnSaveRequested += OnSaveBehaviorTree;
+                toolbar.OnAutoLayoutRequested += OnAutoLayoutNodes;
+                toolbar.OnPlayToggleRequested += OnTogglePlayMode;
+                toolbar.OnDebugToggleRequested += OnToggleDebugMode;
+            }
+
             if (graphView != null && inspector != null)
             {
                 graphView.OnNodeSelected += inspector.SetSelectedNode;
@@ -282,11 +222,10 @@ namespace MonsterBT.Editor
                 inspector.OnPropertyChanged += graphView.HandlePropertyChanged;
             }
 
-            rootContainer.Query<VisualElement>(className: "node-list-item").ForEach(item =>
+            if (nodeLibrary != null && graphView != null)
             {
-                item.RegisterCallback<ClickEvent>(OnClickSpawnNode);
-                item.RegisterCallback<MouseDownEvent>(OnDragSpawnNode);
-            });
+                nodeLibrary.OnNodeRequested += graphView.CreateNode;
+            }
 
             if (currentBehaviorTree != null)
                 SetBehaviorTree(currentBehaviorTree);
@@ -296,13 +235,13 @@ namespace MonsterBT.Editor
 
         #region Toolbar Callbacks
 
-        private void OnBehaviorTreeChanged(ChangeEvent<Object> changeEvent)
+        private void OnBehaviorTreeChanged(BehaviorTree behaviorTree)
         {
-            currentBehaviorTree = changeEvent.newValue as BehaviorTree;
-            graphView.SetBehaviorTree(currentBehaviorTree);
+            currentBehaviorTree = behaviorTree;
+            graphView?.SetBehaviorTree(currentBehaviorTree);
         }
 
-        private void OnAutoLayoutNodes(ClickEvent evt)
+        private void OnAutoLayoutNodes()
         {
             if (graphView != null && currentBehaviorTree != null)
             {
@@ -311,33 +250,33 @@ namespace MonsterBT.Editor
             }
         }
 
-        private void OnTogglePlayMode(ClickEvent evt)
+        private void OnTogglePlayMode()
         {
             // TODO:实现播放/停止行为树的功能
             Debug.Log("切换播放模式");
         }
 
-        private void OnToggleDebugMode(ClickEvent evt)
+        private void OnToggleDebugMode()
         {
             // TODO:实现调试模式切换
             Debug.Log("切换调试模式");
         }
 
-        private void OnCreateNewBehaviorTree(ClickEvent evt)
+        private void OnCreateNewBehaviorTree()
         {
             var tree = CreateInstance<BehaviorTree>();
             var rootNode = CreateInstance<RootNode>();
             var blackboard = CreateInstance<Blackboard>();
-            
+
             rootNode.name = "Root";
             rootNode.Position = new Vector2(400, 100);
             blackboard.name = "Blackboard";
-            
+
             tree.RootNode = rootNode;
             tree.Blackboard = blackboard;
             tree.name = "New BehaviorTree";
 
-            string path = EditorUtility.SaveFilePanelInProject("Save Behavior Tree", "NewBehaviorTree", "asset", "");
+            var path = EditorUtility.SaveFilePanelInProject("Save Behavior Tree", "NewBehaviorTree", "asset", "");
             if (string.IsNullOrEmpty(path)) return;
 
             AssetDatabase.CreateAsset(tree, path);
@@ -345,12 +284,10 @@ namespace MonsterBT.Editor
             AssetDatabase.AddObjectToAsset(blackboard, tree);
             AssetDatabase.SaveAssets();
 
-            behaviorTreeField.value = tree;
-            currentBehaviorTree = tree;
-            graphView.SetBehaviorTree(currentBehaviorTree);
+            SetBehaviorTree(tree);
         }
 
-        private void OnSaveBehaviorTree(ClickEvent evt)
+        private void OnSaveBehaviorTree()
         {
             if (currentBehaviorTree == null)
                 return;
@@ -358,38 +295,6 @@ namespace MonsterBT.Editor
             EditorUtility.SetDirty(currentBehaviorTree);
             AssetDatabase.SaveAssets();
             Debug.Log("Behavior tree saved.");
-        }
-
-        #endregion
-
-        #region Library Callbacks
-
-        private void OnClickSpawnNode(ClickEvent evt)
-        {
-            if (graphView == null || currentBehaviorTree == null) return;
-
-            var targetElement = evt.currentTarget as VisualElement;
-            if (targetElement == null) return;
-
-            var nodeType = targetElement.name switch
-            {
-                "selector-item" => typeof(Selector),
-                "sequence-item" => typeof(Sequence),
-                "inverter-item" => typeof(Inverter),
-                "debug-log-item" => typeof(DebugLogAction),
-                "wait-item" => typeof(WaitAction),
-                "move-to-target-item" => typeof(MoveToTargetAction),
-                "distance-condition-item" => typeof(DistanceCondition),
-                _ => null
-            };
-
-            if (nodeType != null)
-                graphView.CreateNode(nodeType);
-        }
-
-        private void OnDragSpawnNode(MouseDownEvent evt)
-        {
-            //TODO: 实现拖动到指定位置创建节点
         }
 
         #endregion
