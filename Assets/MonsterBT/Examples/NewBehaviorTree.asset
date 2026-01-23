@@ -13,24 +13,6 @@ MonoBehaviour:
   m_Name: Blackboard
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Blackboard
   variableInfos: []
---- !u!114 &-2288716697283874751
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e099a95fa0d245a292cf6e49cddf02f9, type: 3}
-  m_Name: Parallel
-  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Composite.Parallel
-  description: 
-  position: {x: 923, y: 1}
-  children: []
-  finishMode: 0
-  successCount: 1
-  failureCount: 1
 --- !u!114 &-43251937931516587
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -44,7 +26,7 @@ MonoBehaviour:
   m_Name: DebugLogAction
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Actions.DebugLogAction
   description: 
-  position: {x: 931, y: 68}
+  position: {x: 929.60004, y: 84}
   message: Debug Log Action
   logType: 3
 --- !u!114 &11400000
