@@ -295,7 +295,7 @@ namespace MonsterBT.Editor
                     {
                         Object.DestroyImmediate(node, true);
                     }
-                    catch (System.Exception ex)
+                    catch (Exception ex)
                     {
                         Debug.LogError($"Failed to destroy node: {ex.Message}");
                     }
@@ -312,7 +312,7 @@ namespace MonsterBT.Editor
             // 处理创建的连接
             if (graphViewChange.edgesToCreate != null)
             {
-                bool connectionChanged = false;
+                var connectionChanged = false;
                 foreach (var edge in graphViewChange.edgesToCreate)
                 {
                     var parentView = edge.output.node as BTNodeView;
@@ -482,7 +482,7 @@ namespace MonsterBT.Editor
                         originalPos.height));
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Debug.LogError($"Failed to duplicate node: {ex.Message}");
             }
@@ -535,7 +535,7 @@ namespace MonsterBT.Editor
             {
                 Object.DestroyImmediate(nodeView.Node, true);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Debug.LogError($"Failed to destroy node: {ex.Message}");
             }
@@ -577,7 +577,7 @@ namespace MonsterBT.Editor
                     pastedView.SetPosition(new Rect(mousePosition, Vector2.zero));
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Debug.LogError($"Failed to paste node: {ex.Message}");
             }
@@ -595,8 +595,8 @@ namespace MonsterBT.Editor
             {
                 foreach (var type in types)
                 {
-                    string displayName = BTNodeTypeHelper.GetNodeDisplayName(type);
-                    string menuPath = $"Create Node/{category}/{displayName}";
+                    var displayName = BTNodeTypeHelper.GetNodeDisplayName(type);
+                    var menuPath = $"Create Node/{category}/{displayName}";
 
                     evt.menu.AppendAction(menuPath, _ => CreateNode(type), DropdownMenuAction.AlwaysEnabled);
                 }
@@ -613,7 +613,7 @@ namespace MonsterBT.Editor
                 return;
 
             // 添加到Runtime Blackboard
-            object defaultValue = GetDefaultValue(varType);
+            var defaultValue = GetDefaultValue(varType);
             behaviorTree.Blackboard.AddVariable(varName, varType, defaultValue);
 
             RefreshBlackboardView();

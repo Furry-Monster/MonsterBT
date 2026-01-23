@@ -40,7 +40,7 @@ namespace MonsterBT.Editor.Services
             }
         }
 
-        public static void MarkDirtyAndSave(UnityEngine.Object obj)
+        public static void MarkDirtyAndSave(Object obj)
         {
             if (obj == null)
                 return;
@@ -49,7 +49,7 @@ namespace MonsterBT.Editor.Services
             AssetDatabase.SaveAssets();
         }
 
-        public static void MarkDirtyAndSave(params UnityEngine.Object[] objects)
+        public static void MarkDirtyAndSave(params Object[] objects)
         {
             if (objects == null)
                 return;

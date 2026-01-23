@@ -7,7 +7,7 @@ namespace MonsterBT.Editor
 {
     public static class BTEditorResources
     {
-        private static string _editorDirectory;
+        private static string editorDirectory;
 
         public static StyleSheet LoadStyleSheet(string fileName)
         {
@@ -43,20 +43,20 @@ namespace MonsterBT.Editor
 
         private static string GetEditorDirectory()
         {
-            if (!string.IsNullOrEmpty(_editorDirectory)) return _editorDirectory;
+            if (!string.IsNullOrEmpty(editorDirectory)) return editorDirectory;
 
             var guids = AssetDatabase.FindAssets("BTEditorWindow t:MonoScript");
             if (guids.Length > 0)
             {
-                _editorDirectory = Path.GetDirectoryName(AssetDatabase.GUIDToAssetPath(guids[0]));
-                return _editorDirectory;
+                editorDirectory = Path.GetDirectoryName(AssetDatabase.GUIDToAssetPath(guids[0]));
+                return editorDirectory;
             }
 
             guids = AssetDatabase.FindAssets("BTEditorResources t:MonoScript");
             if (guids.Length > 0)
             {
-                _editorDirectory = Path.GetDirectoryName(AssetDatabase.GUIDToAssetPath(guids[0]));
-                return _editorDirectory;
+                editorDirectory = Path.GetDirectoryName(AssetDatabase.GUIDToAssetPath(guids[0]));
+                return editorDirectory;
             }
 
             return null;

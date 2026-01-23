@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 using MonsterBT.Runtime;
@@ -115,7 +114,7 @@ namespace MonsterBT.Editor.Services
             if (node == null)
                 return false;
 
-            return !(node is RootNode);
+            return node is not RootNode;
         }
 
         public static Port.Capacity GetOutputPortCapacity(BTNode node)
@@ -151,7 +150,7 @@ namespace MonsterBT.Editor.Services
 
         public static bool CanDeleteNode(BTNode node)
         {
-            return !(node is RootNode);
+            return node is not RootNode;
         }
     }
 }

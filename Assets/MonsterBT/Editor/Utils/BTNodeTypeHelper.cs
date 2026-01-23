@@ -80,16 +80,12 @@ namespace MonsterBT.Editor
             var typeName = type.Name;
 
             if (typeName.EndsWith("Node"))
-                typeName = typeName.Substring(0, typeName.Length - 4);
+                typeName = typeName[..^4];
 
             if (typeName.EndsWith("Action"))
-                typeName = typeName.Substring(0, typeName.Length - 6);
-            else if (typeName.EndsWith("Condition"))
-                typeName = typeName.Substring(0, typeName.Length - 9);
-            else if (typeName.EndsWith("Decorator"))
-                typeName = typeName.Substring(0, typeName.Length - 9);
-            else if (typeName.EndsWith("Composite"))
-                typeName = typeName.Substring(0, typeName.Length - 9);
+                typeName = typeName[..^6];
+            else if (typeName.EndsWith("Condition") || typeName.EndsWith("Decorator") || typeName.EndsWith("Composite"))
+                typeName = typeName[..^9];
 
             return Regex.Replace(typeName, "(?<!^)([A-Z])", " $1");
         }

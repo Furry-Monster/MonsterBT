@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -14,7 +15,7 @@ namespace MonsterBT.Editor.Services
             if (behaviorTree == null)
                 return false;
 
-            bool needsSave = false;
+            var needsSave = false;
 
             if (behaviorTree.Blackboard == null)
             {
@@ -51,7 +52,7 @@ namespace MonsterBT.Editor.Services
 
         private static bool CleanupDestroyedNodeReferences(BehaviorTree behaviorTree)
         {
-            bool needsSave = false;
+            var needsSave = false;
 
             if (behaviorTree.RootNode != null && behaviorTree.RootNode.Equals(null))
             {
@@ -73,14 +74,13 @@ namespace MonsterBT.Editor.Services
 
         private static bool CleanupNodeChildren(BTNode node)
         {
-            bool needsSave = false;
+            var needsSave = false;
 
             var childrenProperty = node.GetType().GetProperty("Children",
                 BindingFlags.Public | BindingFlags.Instance);
             if (childrenProperty != null)
             {
-                var children = childrenProperty.GetValue(node) as System.Collections.IList;
-                if (children != null)
+                if (childrenProperty.GetValue(node) is IList children)
                 {
                     var toRemove = new List<BTNode>();
                     foreach (BTNode child in children)
@@ -116,7 +116,7 @@ namespace MonsterBT.Editor.Services
 
         private static bool ValidateNodeConnections(BehaviorTree behaviorTree)
         {
-            bool needsSave = false;
+            var needsSave = false;
             var allNodes = GetAllNodesInAsset(behaviorTree).ToHashSet();
 
             foreach (var node in allNodes)
