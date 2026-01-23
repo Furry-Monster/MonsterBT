@@ -105,35 +105,13 @@ namespace MonsterBT.Editor
             if (node == null || node.Equals(null))
                 return;
 
-            if (node is CompositeNode composite)
+            foreach (var child in BTNodeEditorHelper.GetChildren(node))
             {
-                if (composite.Children == null || composite.Children.Count == 0)
-                    return;
+                if (child == null || child.Equals(null))
+                    continue;
 
-                foreach (var child in composite.Children)
-                {
-                    if (child == null || child.Equals(null))
-                        continue;
-
-                    CreateNodeViewFromNode(child);
-                    CreateNodeViewsRecursive(child);
-                }
-            }
-            else if (node is DecoratorNode decorator)
-            {
-                if (decorator.Child == null || decorator.Child.Equals(null))
-                    return;
-
-                CreateNodeViewFromNode(decorator.Child);
-                CreateNodeViewsRecursive(decorator.Child);
-            }
-            else if (node is RootNode root)
-            {
-                if (root.Child == null || root.Child.Equals(null))
-                    return;
-
-                CreateNodeViewFromNode(root.Child);
-                CreateNodeViewsRecursive(root.Child);
+                CreateNodeViewFromNode(child);
+                CreateNodeViewsRecursive(child);
             }
         }
 
@@ -195,41 +173,15 @@ namespace MonsterBT.Editor
                 if (node == null || node.Equals(null) || nodeView == null)
                     continue;
 
-                // 连接到子节点
-                if (node is RootNode root)
+                // 连接到所有子节点
+                foreach (var child in BTNodeEditorHelper.GetChildren(node))
                 {
-                    if (root.Child == null || root.Child.Equals(null))
+                    if (child == null || child.Equals(null))
                         continue;
 
-                    if (nodeViews.TryGetValue(root.Child, out var childView) && childView != null)
+                    if (nodeViews.TryGetValue(child, out var childView) && childView != null)
                     {
                         ConnectNodes(nodeView, childView);
-                    }
-                }
-                else if (node is DecoratorNode decorator)
-                {
-                    if (decorator.Child == null || decorator.Child.Equals(null))
-                        continue;
-
-                    if (nodeViews.TryGetValue(decorator.Child, out var childView) && childView != null)
-                    {
-                        ConnectNodes(nodeView, childView);
-                    }
-                }
-                else if (node is CompositeNode composite)
-                {
-                    if (composite.Children == null || composite.Children.Count == 0)
-                        continue;
-
-                    foreach (var child in composite.Children)
-                    {
-                        if (child == null || child.Equals(null))
-                            continue;
-
-                        if (nodeViews.TryGetValue(child, out var childView) && childView != null)
-                        {
-                            ConnectNodes(nodeView, childView);
-                        }
                     }
                 }
             }
@@ -269,20 +221,10 @@ namespace MonsterBT.Editor
                         var parentView = edge.output.node as BTNodeView;
                         var childView = edge.input.node as BTNodeView;
 
-                        if (parentView?.Node != null && !parentView.Node.Equals(null))
+                        if (parentView?.Node != null && !parentView.Node.Equals(null) && 
+                            childView?.Node != null && !childView.Node.Equals(null))
                         {
-                            switch (parentView.Node)
-                            {
-                                case RootNode rootNode when childView != null:
-                                    rootNode.Child = null;
-                                    break;
-                                case DecoratorNode decoratorNode when childView != null:
-                                    decoratorNode.Child = null;
-                                    break;
-                                case CompositeNode compositeNode when childView != null && childView.Node != null:
-                                    compositeNode.Children.Remove(childView.Node);
-                                    break;
-                            }
+                            BTNodeEditorHelper.RemoveChild(parentView.Node, childView.Node);
                         }
                     }
                 }
@@ -315,20 +257,10 @@ namespace MonsterBT.Editor
                         var parentView = edge.output.node as BTNodeView;
                         var childView = edge.input.node as BTNodeView;
 
-                        if (parentView?.Node != null && !parentView.Node.Equals(null) && childView == nodeView)
+                        if (parentView?.Node != null && !parentView.Node.Equals(null) && 
+                            childView == nodeView && nodeView.Node != null)
                         {
-                            switch (parentView.Node)
-                            {
-                                case RootNode rootNode:
-                                    rootNode.Child = null;
-                                    break;
-                                case DecoratorNode decoratorNode:
-                                    decoratorNode.Child = null;
-                                    break;
-                                case CompositeNode compositeNode:
-                                    compositeNode.Children.Remove(nodeView.Node);
-                                    break;
-                            }
+                            BTNodeEditorHelper.RemoveChild(parentView.Node, nodeView.Node);
                         }
                     }
 
@@ -345,17 +277,10 @@ namespace MonsterBT.Editor
                     var parentView = edge.output.node as BTNodeView;
                     var childView = edge.input.node as BTNodeView;
 
-                    switch (parentView?.Node)
+                    if (parentView?.Node != null && !parentView.Node.Equals(null) && 
+                        childView?.Node != null && !childView.Node.Equals(null))
                     {
-                        case RootNode rootNode when childView != null:
-                            rootNode.Child = childView.Node;
-                            break;
-                        case DecoratorNode decoratorNode when childView != null:
-                            decoratorNode.Child = childView.Node;
-                            break;
-                        case CompositeNode compositeNode when childView != null:
-                            compositeNode.Children.Add(childView.Node);
-                            break;
+                        BTNodeEditorHelper.SetChild(parentView.Node, childView.Node);
                     }
                 }
             }
@@ -509,7 +434,7 @@ namespace MonsterBT.Editor
 
         private void DeleteNode(BTNodeView nodeView)
         {
-            if (nodeView.Node is RootNode)
+            if (!BTNodeEditorHelper.CanDeleteNode(nodeView.Node))
             {
                 Debug.LogWarning("Cannot delete root node!");
                 return;
@@ -543,18 +468,7 @@ namespace MonsterBT.Editor
                     if (parentNode == null || parentNode.Equals(null))
                         continue;
 
-                    switch (parentNode)
-                    {
-                        case RootNode root when root.Child == node:
-                            root.Child = null;
-                            break;
-                        case DecoratorNode decorator when decorator.Child == node:
-                            decorator.Child = null;
-                            break;
-                        case CompositeNode composite when composite.Children != null:
-                            composite.Children.Remove(node);
-                            break;
-                    }
+                    BTNodeEditorHelper.RemoveChild(parentNode, node);
                 }
             }
 

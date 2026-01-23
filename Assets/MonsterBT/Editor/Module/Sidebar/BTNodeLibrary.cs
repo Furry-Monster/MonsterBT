@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using MonsterBT.Editor.Services;
 using UnityEngine.UIElements;
 
@@ -26,19 +27,28 @@ namespace MonsterBT.Editor
 
             var nodeTypes = BTNodeTypeHelper.GetAllNodeTypes();
 
-            string[] categories = { "Composite", "Decorator", "Action", "Condition" };
-            string[] categoryLabels = { "Composite Nodes", "Decorator Nodes", "Action Nodes", "Condition Nodes" };
-
-            for (var i = 0; i < categories.Length; i++)
+            // 动态获取所有分类，而不是硬编码
+            var categoryLabels = new Dictionary<string, string>
             {
-                var category = categories[i];
+                ["Composite"] = "Composite Nodes",
+                ["Decorator"] = "Decorator Nodes",
+                ["Action"] = "Action Nodes",
+                ["Condition"] = "Condition Nodes",
+                ["Other"] = "Other Nodes"
+            };
+
+            // 按分类顺序显示
+            var categoryOrder = new[] { "Composite", "Decorator", "Action", "Condition", "Other" };
+
+            foreach (var category in categoryOrder)
+            {
                 if (!nodeTypes.ContainsKey(category) || nodeTypes[category].Count == 0)
                     continue;
 
                 var section = new VisualElement { name = $"{category.ToLower()}-nodes" };
                 section.AddToClassList("sidebar-section");
 
-                var sectionTitle = new Label(categoryLabels[i]);
+                var sectionTitle = new Label(categoryLabels.GetValueOrDefault(category, $"{category} Nodes"));
                 sectionTitle.AddToClassList("sidebar-title");
                 section.Add(sectionTitle);
 

@@ -165,7 +165,7 @@ namespace MonsterBT.Editor
         private VisualElement CreateFieldEditor(FieldInfo field, BTNode node)
         {
             var fieldType = field.FieldType;
-            string fieldName = ObjectNames.NicifyVariableName(field.Name);
+            var fieldName = ObjectNames.NicifyVariableName(field.Name);
 
             return fieldType switch
             {

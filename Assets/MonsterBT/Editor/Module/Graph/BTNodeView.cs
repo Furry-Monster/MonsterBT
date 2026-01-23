@@ -1,6 +1,4 @@
 using MonsterBT.Runtime;
-using MonsterBT.Runtime.Composite;
-using MonsterBT.Runtime.Decorator;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -55,7 +53,7 @@ namespace MonsterBT.Editor
         private void SetupPorts()
         {
             // Input Part
-            if (Node is not RootNode)
+            if (BTNodeEditorHelper.HasInputPort(Node))
             {
                 InputPort = InstantiatePort(Orientation.Horizontal, Direction.Input, Port.Capacity.Single,
                     typeof(bool));
@@ -64,19 +62,11 @@ namespace MonsterBT.Editor
             }
 
             // Output Part
-            if (Node is RootNode or CompositeNode)
+            if (BTNodeEditorHelper.HasOutputPort(Node))
             {
-                OutputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi,
+                var outputCapacity = BTNodeEditorHelper.GetOutputPortCapacity(Node);
+                OutputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, outputCapacity,
                     typeof(bool));
-            }
-            else if (Node is DecoratorNode)
-            {
-                OutputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single,
-                    typeof(bool));
-            }
-
-            if (OutputPort != null)
-            {
                 OutputPort.portName = "Output";
                 outputContainer.Add(OutputPort);
             }
@@ -84,34 +74,26 @@ namespace MonsterBT.Editor
 
         private void SetupNodeStyle()
         {
-            switch (Node)
-            {
-                case RootNode:
-                    AddToClassList("root-node");
-                    break;
-                case CompositeNode:
-                    AddToClassList("composite-node");
-                    break;
-                case DecoratorNode:
-                    AddToClassList("decorator-node");
-                    break;
-                case ActionNode:
-                    AddToClassList("action-node");
-                    break;
-            }
+            var styleClass = BTNodeEditorHelper.GetNodeStyleClass(Node);
+            AddToClassList(styleClass);
         }
 
         private string GetNodeDescription()
         {
-            return Node switch
-            {
-                RootNode => "Root of the behavior tree",
-                Selector => "Execute children until one succeeds",
-                Sequence => "Execute children in sequence until one fails",
-                Inverter => "Invert the result of child node",
-                ActionNode action => $"Action: {action.GetType().Name}",
-                _ => "Behavior tree node"
-            };
+            // 如果节点有自定义描述，使用自定义描述
+            if (!string.IsNullOrEmpty(Node.Description))
+                return Node.Description;
+
+            // 否则使用类型名称生成描述
+            var typeName = Node.GetType().Name;
+            if (typeName.EndsWith("Node"))
+                typeName = typeName.Substring(0, typeName.Length - 4);
+
+            // 特殊处理 RootNode
+            if (Node is RootNode)
+                return "Root of the behavior tree";
+
+            return $"Behavior tree node: {typeName}";
         }
 
         public override void SetPosition(Rect newPos)
