@@ -181,7 +181,7 @@ namespace MonsterBT.Editor
 
             if (graphView != null)
             {
-                BTEditorEventBus.OnPropertyChanged += graphView.HandlePropertyChanged;
+                BTEditorEventBus.OnPropertyChanged += graphView.UpdateNodeContent;
                 BTEditorEventBus.OnNodeRequested += graphView.CreateNode;
             }
 

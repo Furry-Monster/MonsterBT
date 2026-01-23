@@ -54,16 +54,11 @@ namespace MonsterBT.Editor
 
             graphViewChanged += OnGraphViewChanged;
 
-            // 轮询监听选中节点变化
-            schedule.Execute(CheckSelection).Every(100);
-
-            // 广播视图更新
             PopulateView();
         }
 
         ~BTNodeGraphView()
         {
-            // 清理事件订阅
             graphViewChanged -= OnGraphViewChanged;
         }
 
@@ -85,24 +80,24 @@ namespace MonsterBT.Editor
         /// </summary>
         public void PopulateView()
         {
-            // 填充当前视图
+            // 清除现有内容
             graphViewChanged -= OnGraphViewChanged;
 
-            // 清除现有内容
             DeleteElements(graphElements);
             nodeViews.Clear();
 
             graphViewChanged += OnGraphViewChanged;
 
+            // 填充视图
             if (behaviorTree?.RootNode != null && !behaviorTree.RootNode.Equals(null))
             {
                 var rootView = CreateNodeViewFromNode(behaviorTree.RootNode);
-                if (rootView != null)
-                {
-                    CreateNodeViewsRecursive(behaviorTree.RootNode);
-                    LoadOtherNodes();
-                    CreateConnections();
-                }
+                if (rootView == null)
+                    return;
+
+                CreateNodeViewsRecursive(behaviorTree.RootNode);
+                CreateIsolatedNodes();
+                CreateConnections();
             }
         }
 
@@ -124,25 +119,19 @@ namespace MonsterBT.Editor
         /// <summary>
         /// 加载所有存储在BehaviorTreeAsset中但尚未连接的节点
         /// </summary>
-        private void LoadOtherNodes()
+        private void CreateIsolatedNodes()
         {
             if (behaviorTree == null)
                 return;
 
-            // 获取asset中所有的BTNode对象
-            var allNodesInAsset = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GetAssetPath(behaviorTree))
+            var isolatedNodes = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GetAssetPath(behaviorTree))
                 .OfType<BTNode>()
                 .Where(node => node != null && !node.Equals(null)) // 过滤已销毁的节点
+                .Where(node => !nodeViews.ContainsKey(node)) // 过滤已创建的节点
                 .ToList();
 
-            // 为所有尚未加载的节点创建视图
-            foreach (var node in allNodesInAsset)
-            {
-                if (!nodeViews.ContainsKey(node))
-                {
-                    CreateNodeViewFromNode(node);
-                }
-            }
+            foreach (var node in isolatedNodes)
+                CreateNodeViewFromNode(node);
         }
 
         private BTNodeView CreateNodeViewFromNode(BTNode node)
@@ -182,9 +171,7 @@ namespace MonsterBT.Editor
                         continue;
 
                     if (nodeViews.TryGetValue(child, out var childView) && childView != null)
-                    {
                         ConnectNodes(nodeView, childView);
-                    }
                 }
             }
         }
@@ -201,8 +188,6 @@ namespace MonsterBT.Editor
         /// <summary>
         /// 仅仅更新修改过的GraphView元素，相比广播，性能更优，通过事件自动调用
         /// </summary>
-        /// <param name="graphViewChange">原始元素更新记录</param>
-        /// <returns>处理后的元素更新记录</returns>
         private GraphViewChange OnGraphViewChanged(GraphViewChange graphViewChange)
         {
             // 处理删除的元素
@@ -246,12 +231,10 @@ namespace MonsterBT.Editor
                     if (!BTNodeEditorService.CanDeleteNode(nodeView.Node))
                     {
                         Debug.LogWarning("Cannot delete root node!");
-                        // 将节点重新添加到视图中，防止被删除
                         AddElement(nodeView);
                         continue;
                     }
 
-                    // 从字典中移除
                     nodeViews.Remove(nodeView.Node);
 
                     // 删除所有连接到该节点的边
@@ -290,7 +273,7 @@ namespace MonsterBT.Editor
                         BTNodeEditorService.RemoveChild(parentNode, node);
                     }
 
-                    // 销毁节点对象（通过 Delete 热键删除时需要实际销毁）
+                    // 销毁节点对象
                     try
                     {
                         Object.DestroyImmediate(node, true);
@@ -814,31 +797,39 @@ namespace MonsterBT.Editor
 
         #region Inspector Methods
 
-        private BTNode lastSelectedNode;
+        public override void AddToSelection(ISelectable selectable)
+        {
+            base.AddToSelection(selectable);
+            UpdateSelection();
+        }
 
-        // TODO:从100ms的轮询优化到其他方式
-        private void CheckSelection()
+        public override void RemoveFromSelection(ISelectable selectable)
+        {
+            base.RemoveFromSelection(selectable);
+            UpdateSelection();
+        }
+
+        public override void ClearSelection()
+        {
+            base.ClearSelection();
+            UpdateSelection();
+        }
+
+        /// <summary>
+        /// 更新选择状态并发布事件
+        /// </summary>
+        private void UpdateSelection()
         {
             var selectedNodes = selection.OfType<BTNodeView>().ToList();
             var currentSelectedNode = selectedNodes.Count == 1 ? selectedNodes[0].Node : null;
 
-            // 检查选择是否发生变化
-            if (currentSelectedNode != lastSelectedNode)
-            {
-                lastSelectedNode = currentSelectedNode;
-
-                if (currentSelectedNode != null)
-                {
-                    BTEditorEventBus.PublishNodeSelected(currentSelectedNode);
-                }
-                else
-                {
-                    BTEditorEventBus.PublishNodeDeselected();
-                }
-            }
+            if (currentSelectedNode != null)
+                BTEditorEventBus.PublishNodeSelected(currentSelectedNode);
+            else
+                BTEditorEventBus.PublishNodeDeselected();
         }
 
-        public void HandlePropertyChanged(BTNode node, string propertyName)
+        public void UpdateNodeContent(BTNode node, string propertyName)
         {
             if (nodeViews.TryGetValue(node, out var nodeView))
             {
