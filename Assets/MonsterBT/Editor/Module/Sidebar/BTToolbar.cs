@@ -78,10 +78,7 @@ namespace MonsterBT.Editor
         public void OnBehaviorTreeChanged(BehaviorTree behaviorTree)
         {
             currentBehaviorTree = behaviorTree;
-            if (graphView != null)
-            {
-                graphView.SetBehaviorTree(currentBehaviorTree);
-            }
+            graphView?.SetBehaviorTree(currentBehaviorTree);
 
             onBehaviorTreeChangedCallback?.Invoke(behaviorTree);
         }
@@ -126,14 +123,10 @@ namespace MonsterBT.Editor
 
         #endregion
 
-        #region Private Event Handlers
-
         private void OnBehaviorTreeFieldChanged(ChangeEvent<Object> changeEvent)
         {
             var behaviorTree = changeEvent.newValue as BehaviorTree;
             OnBehaviorTreeChanged(behaviorTree);
         }
-
-        #endregion
     }
 }

@@ -17,6 +17,11 @@ namespace MonsterBT.Editor
 
         public BTNodeView(BTNode node)
         {
+            if (node == null)
+            {
+                throw new System.ArgumentNullException(nameof(node), "Cannot create BTNodeView with null node");
+            }
+
             Node = node;
 
             SetupNodeContent();
@@ -28,6 +33,12 @@ namespace MonsterBT.Editor
 
         private void SetupNodeContent()
         {
+            if (Node == null)
+            {
+                title = "Invalid Node";
+                return;
+            }
+
             title = string.IsNullOrEmpty(Node.name) ? Node.GetType().Name : Node.name;
 
             var description = string.IsNullOrEmpty(Node.Description)

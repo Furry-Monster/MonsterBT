@@ -17,8 +17,6 @@ namespace MonsterBT.Editor
 
         private BehaviorTree currentBehaviorTree;
 
-        #region UI Methods
-
         [MenuItem("Window/MonsterBT/BehaviorTree")]
         public static void ShowWindow()
         {
@@ -158,20 +156,15 @@ namespace MonsterBT.Editor
 
         private void SetupUIElements()
         {
-            SetupEventHandlers();
+            if (toolbar != null)
+            {
+                if (graphView != null)
+                {
+                    toolbar.SetGraphView(graphView);
+                }
 
-            if (currentBehaviorTree != null)
-                SetBehaviorTree(currentBehaviorTree);
-        }
-
-        private void SetupEventHandlers()
-        {
-            BTEditorEventBus.OnBehaviorTreeChanged += OnBehaviorTreeChanged;
-            BTEditorEventBus.OnCreateNewRequested += OnCreateNewBehaviorTree;
-            BTEditorEventBus.OnSaveRequested += OnSaveBehaviorTree;
-            BTEditorEventBus.OnAutoLayoutRequested += OnAutoLayoutNodes;
-            BTEditorEventBus.OnPlayToggleRequested += OnTogglePlayMode;
-            BTEditorEventBus.OnDebugToggleRequested += OnToggleDebugMode;
+                toolbar.SetBehaviorTreeChangedCallback(OnBehaviorTreeChanged);
+            }
 
             if (inspector != null)
             {
@@ -184,53 +177,18 @@ namespace MonsterBT.Editor
                 BTEditorEventBus.OnPropertyChanged += graphView.HandlePropertyChanged;
                 BTEditorEventBus.OnNodeRequested += graphView.CreateNode;
             }
+
+            if (currentBehaviorTree != null)
+                SetBehaviorTree(currentBehaviorTree);
         }
-
-        #endregion
-
-        #region Toolbar Callbacks
 
         private void OnBehaviorTreeChanged(BehaviorTree behaviorTree)
         {
             currentBehaviorTree = behaviorTree;
-            graphView?.SetBehaviorTree(currentBehaviorTree);
-        }
-
-        private void OnAutoLayoutNodes()
-        {
-            if (graphView != null && currentBehaviorTree != null)
+            if (behaviorTree != null)
             {
-                // TODO:实现自动布局逻辑
-                Debug.Log("执行自动布局");
+                BTBehaviorTreeService.EnsureBlackboardExists(behaviorTree);
             }
         }
-
-        private void OnTogglePlayMode()
-        {
-            // TODO:实现播放/停止行为树的功能
-            Debug.Log("切换播放模式");
-        }
-
-        private void OnToggleDebugMode()
-        {
-            // TODO:实现调试模式切换
-            Debug.Log("切换调试模式");
-        }
-
-        private void OnCreateNewBehaviorTree()
-        {
-            var tree = BTBehaviorTreeService.CreateNewBehaviorTree();
-            if (tree != null)
-            {
-                SetBehaviorTree(tree);
-            }
-        }
-
-        private void OnSaveBehaviorTree()
-        {
-            BTBehaviorTreeService.SaveBehaviorTree(currentBehaviorTree);
-        }
-
-        #endregion
     }
 }

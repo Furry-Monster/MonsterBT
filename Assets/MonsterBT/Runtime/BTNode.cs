@@ -19,7 +19,7 @@ namespace MonsterBT.Runtime
     public abstract class BTNode : ScriptableObject
     {
         [SerializeField] protected string description;
-        [SerializeField][ReadOnly] protected Vector2 position;
+        [SerializeField] [ReadOnly] protected Vector2 position;
 
         public string Description
         {
@@ -54,7 +54,7 @@ namespace MonsterBT.Runtime
 
             state = OnUpdate();
 
-            if (state == BTNodeState.Success || state == BTNodeState.Failure)
+            if (state is BTNodeState.Success or BTNodeState.Failure)
             {
                 OnStop();
                 started = false;
@@ -85,5 +85,4 @@ namespace MonsterBT.Runtime
         {
         }
     }
-
 }

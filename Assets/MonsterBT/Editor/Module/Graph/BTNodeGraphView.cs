@@ -88,17 +88,23 @@ namespace MonsterBT.Editor
 
             graphViewChanged += OnGraphViewChanged;
 
-            if (behaviorTree?.RootNode != null)
+            if (behaviorTree?.RootNode != null && !behaviorTree.RootNode.Equals(null))
             {
-                CreateNodeViewFromNode(behaviorTree.RootNode);
-                CreateNodeViewsRecursive(behaviorTree.RootNode);
-                LoadOtherNodes();
-                CreateConnections();
+                var rootView = CreateNodeViewFromNode(behaviorTree.RootNode);
+                if (rootView != null)
+                {
+                    CreateNodeViewsRecursive(behaviorTree.RootNode);
+                    LoadOtherNodes();
+                    CreateConnections();
+                }
             }
         }
 
         private void CreateNodeViewsRecursive(BTNode node)
         {
+            if (node == null || node.Equals(null))
+                return;
+
             if (node is CompositeNode composite)
             {
                 if (composite.Children == null || composite.Children.Count == 0)
@@ -106,13 +112,16 @@ namespace MonsterBT.Editor
 
                 foreach (var child in composite.Children)
                 {
+                    if (child == null || child.Equals(null))
+                        continue;
+
                     CreateNodeViewFromNode(child);
                     CreateNodeViewsRecursive(child);
                 }
             }
             else if (node is DecoratorNode decorator)
             {
-                if (decorator.Child == null)
+                if (decorator.Child == null || decorator.Child.Equals(null))
                     return;
 
                 CreateNodeViewFromNode(decorator.Child);
@@ -120,7 +129,7 @@ namespace MonsterBT.Editor
             }
             else if (node is RootNode root)
             {
-                if (root.Child == null)
+                if (root.Child == null || root.Child.Equals(null))
                     return;
 
                 CreateNodeViewFromNode(root.Child);
@@ -139,6 +148,7 @@ namespace MonsterBT.Editor
             // 获取asset中所有的BTNode对象
             var allNodesInAsset = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GetAssetPath(behaviorTree))
                 .OfType<BTNode>()
+                .Where(node => node != null && !node.Equals(null)) // 过滤已销毁的节点
                 .ToList();
 
             // 为所有尚未加载的节点创建视图
@@ -153,42 +163,73 @@ namespace MonsterBT.Editor
 
         private BTNodeView CreateNodeViewFromNode(BTNode node)
         {
+            if (node == null)
+                return null;
+
+            // 检查节点是否已被销毁
+            if (node == null || node.Equals(null))
+                return null;
+
             if (nodeViews.ContainsKey(node))
                 return null;
 
-            var nodeView = new BTNodeView(node);
-            nodeViews[node] = nodeView;
-            AddElement(nodeView);
-            return nodeView;
+            try
+            {
+                var nodeView = new BTNodeView(node);
+                nodeViews[node] = nodeView;
+                AddElement(nodeView);
+                return nodeView;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"Failed to create node view for node: {ex.Message}");
+                return null;
+            }
         }
 
         private void CreateConnections()
         {
             foreach (var (node, nodeView) in nodeViews)
             {
+                // 检查节点是否已被销毁
+                if (node == null || node.Equals(null) || nodeView == null)
+                    continue;
+
                 // 连接到子节点
                 if (node is RootNode root)
                 {
-                    if (root.Child == null)
-                        return;
+                    if (root.Child == null || root.Child.Equals(null))
+                        continue;
 
-                    ConnectNodes(nodeView, nodeViews[root.Child]);
+                    if (nodeViews.TryGetValue(root.Child, out var childView) && childView != null)
+                    {
+                        ConnectNodes(nodeView, childView);
+                    }
                 }
                 else if (node is DecoratorNode decorator)
                 {
-                    if (decorator.Child == null)
-                        return;
+                    if (decorator.Child == null || decorator.Child.Equals(null))
+                        continue;
 
-                    ConnectNodes(nodeView, nodeViews[decorator.Child]);
+                    if (nodeViews.TryGetValue(decorator.Child, out var childView) && childView != null)
+                    {
+                        ConnectNodes(nodeView, childView);
+                    }
                 }
                 else if (node is CompositeNode composite)
                 {
                     if (composite.Children == null || composite.Children.Count == 0)
-                        return;
+                        continue;
 
                     foreach (var child in composite.Children)
                     {
-                        ConnectNodes(nodeView, nodeViews[child]);
+                        if (child == null || child.Equals(null))
+                            continue;
+
+                        if (nodeViews.TryGetValue(child, out var childView) && childView != null)
+                        {
+                            ConnectNodes(nodeView, childView);
+                        }
                     }
                 }
             }
@@ -213,11 +254,14 @@ namespace MonsterBT.Editor
             // 处理删除的元素
             if (graphViewChange.elementsToRemove != null)
             {
+                // 先收集要删除的节点，以便后续处理它们的边
+                var nodesToRemove = new List<BTNodeView>();
+                
                 foreach (var element in graphViewChange.elementsToRemove)
                 {
                     if (element is BTNodeView nodeView)
                     {
-                        nodeViews.Remove(nodeView.Node);
+                        nodesToRemove.Add(nodeView);
                     }
                     else if (element is Edge edge)
                     {
@@ -225,19 +269,71 @@ namespace MonsterBT.Editor
                         var parentView = edge.output.node as BTNodeView;
                         var childView = edge.input.node as BTNodeView;
 
-                        switch (parentView?.Node)
+                        if (parentView?.Node != null && !parentView.Node.Equals(null))
                         {
-                            case RootNode rootNode:
-                                rootNode.Child = null;
-                                break;
-                            case DecoratorNode decoratorNode:
-                                decoratorNode.Child = null;
-                                break;
-                            case CompositeNode compositeNode when childView != null:
-                                compositeNode.Children.Remove(childView.Node);
-                                break;
+                            switch (parentView.Node)
+                            {
+                                case RootNode rootNode when childView != null:
+                                    rootNode.Child = null;
+                                    break;
+                                case DecoratorNode decoratorNode when childView != null:
+                                    decoratorNode.Child = null;
+                                    break;
+                                case CompositeNode compositeNode when childView != null && childView.Node != null:
+                                    compositeNode.Children.Remove(childView.Node);
+                                    break;
+                            }
                         }
                     }
+                }
+
+                // 对于删除的节点，删除所有相关的边
+                foreach (var nodeView in nodesToRemove)
+                {
+                    if (nodeView?.Node == null || nodeView.Node.Equals(null))
+                        continue;
+
+                    // 从字典中移除
+                    nodeViews.Remove(nodeView.Node);
+
+                    // 删除所有连接到该节点的边
+                    var edgesToRemove = new List<Edge>();
+                    foreach (var graphElement in graphElements)
+                    {
+                        if (graphElement is Edge edge)
+                        {
+                            if (edge.output.node == nodeView || edge.input.node == nodeView)
+                            {
+                                edgesToRemove.Add(edge);
+                            }
+                        }
+                    }
+
+                    // 从父节点的子节点列表中移除
+                    foreach (var edge in edgesToRemove)
+                    {
+                        var parentView = edge.output.node as BTNodeView;
+                        var childView = edge.input.node as BTNodeView;
+
+                        if (parentView?.Node != null && !parentView.Node.Equals(null) && childView == nodeView)
+                        {
+                            switch (parentView.Node)
+                            {
+                                case RootNode rootNode:
+                                    rootNode.Child = null;
+                                    break;
+                                case DecoratorNode decoratorNode:
+                                    decoratorNode.Child = null;
+                                    break;
+                                case CompositeNode compositeNode:
+                                    compositeNode.Children.Remove(nodeView.Node);
+                                    break;
+                            }
+                        }
+                    }
+
+                    // 如果节点不是通过 DeleteNode 删除的（比如通过 UI 直接删除），需要销毁节点对象
+                    // 但这里我们不销毁，因为 DeleteNode 已经处理了
                 }
             }
 
@@ -417,6 +513,49 @@ namespace MonsterBT.Editor
             {
                 Debug.LogWarning("Cannot delete root node!");
                 return;
+            }
+
+            // 删除所有连接到该节点的边
+            var edgesToRemove = new List<Edge>();
+            foreach (var element in graphElements)
+            {
+                if (element is Edge edge)
+                {
+                    if (edge.output.node == nodeView || edge.input.node == nodeView)
+                    {
+                        edgesToRemove.Add(edge);
+                    }
+                }
+            }
+
+            foreach (var edge in edgesToRemove)
+            {
+                RemoveElement(edge);
+            }
+
+            // 从父节点的子节点列表中移除
+            var node = nodeView.Node;
+            if (node != null)
+            {
+                // 查找所有可能包含此节点的父节点
+                foreach (var (parentNode, parentView) in nodeViews)
+                {
+                    if (parentNode == null || parentNode.Equals(null))
+                        continue;
+
+                    switch (parentNode)
+                    {
+                        case RootNode root when root.Child == node:
+                            root.Child = null;
+                            break;
+                        case DecoratorNode decorator when decorator.Child == node:
+                            decorator.Child = null;
+                            break;
+                        case CompositeNode composite when composite.Children != null:
+                            composite.Children.Remove(node);
+                            break;
+                    }
+                }
             }
 
             RemoveElement(nodeView);
