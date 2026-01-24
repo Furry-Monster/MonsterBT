@@ -113,14 +113,40 @@ namespace MonsterBT.Editor
                     break;
 
                 case "Copy":
+                    // 只有在有选中节点且可以复制时才允许
+                    var copyableNodes = selection.OfType<BTNodeView>()
+                        .Where(nv => BTNodeEditorService.CanCopyNode(nv.Node, behaviorTree))
+                        .ToList();
+                    if (copyableNodes.Count > 0)
+                        evt.StopPropagation();
+                    break;
+
                 case "Cut":
+                    // 只有在有选中节点且可以剪切时才允许
+                    var cuttableNodes = selection.OfType<BTNodeView>()
+                        .Where(nv => BTNodeEditorService.CanCutNode(nv.Node, behaviorTree))
+                        .ToList();
+                    if (cuttableNodes.Count > 0)
+                        evt.StopPropagation();
+                    break;
+
                 case "Delete":
                 case "SoftDelete":
-                case "Duplicate":
-                    // 只有在有选中节点时才允许这些命令
-                    if (selection.Count > 0)
+                    // 只有在有选中节点且可以删除时才允许
+                    var deletableNodes = selection.OfType<BTNodeView>()
+                        .Where(nv => BTNodeEditorService.CanDeleteNode(nv.Node))
+                        .ToList();
+                    if (deletableNodes.Count > 0)
                         evt.StopPropagation();
+                    break;
 
+                case "Duplicate":
+                    // 只有在有选中节点且可以重复时才允许
+                    var duplicatableNodes = selection.OfType<BTNodeView>()
+                        .Where(nv => BTNodeEditorService.CanDuplicateNode(nv.Node, behaviorTree))
+                        .ToList();
+                    if (duplicatableNodes.Count > 0)
+                        evt.StopPropagation();
                     break;
             }
         }
@@ -289,7 +315,7 @@ namespace MonsterBT.Editor
                     if (nodeView?.Node == null || nodeView.Node.Equals(null))
                         continue;
 
-                    // 检查是否可以删除（RootNode 不能删除）
+                    // RootNode 不能删除
                     if (!BTNodeEditorService.CanDeleteNode(nodeView.Node))
                     {
                         Debug.LogWarning("Cannot delete root node!");
@@ -398,12 +424,12 @@ namespace MonsterBT.Editor
 
         #region HotKey Methods
 
-        /// <summary>
-        /// 复制选中的节点
-        /// </summary>
         private void CopySelectedNodes()
         {
-            var selectedNodes = selection.OfType<BTNodeView>().ToList();
+            var selectedNodes = selection.OfType<BTNodeView>()
+                .Where(nv => BTNodeEditorService.CanCopyNode(nv.Node, behaviorTree))
+                .ToList();
+            
             if (selectedNodes.Count > 0)
             {
                 // 复制第一个选中的节点（保持简单，后续可以扩展为多选）
@@ -411,33 +437,30 @@ namespace MonsterBT.Editor
             }
         }
 
-        /// <summary>
-        /// 剪切选中的节点
-        /// </summary>
         private void CutSelectedNodes()
         {
             CopySelectedNodes();
             DeleteSelectedNodes();
         }
 
-        /// <summary>
-        /// 删除选中的节点
-        /// </summary>
         private void DeleteSelectedNodes()
         {
-            var selectedNodes = selection.OfType<BTNodeView>().ToList();
+            var selectedNodes = selection.OfType<BTNodeView>()
+                .Where(nv => BTNodeEditorService.CanDeleteNode(nv.Node))
+                .ToList();
+            
             foreach (var nodeView in selectedNodes)
             {
                 DeleteNode(nodeView);
             }
         }
 
-        /// <summary>
-        /// 重复选中的节点
-        /// </summary>
         private void DuplicateSelectedNodes()
         {
-            var selectedNodes = selection.OfType<BTNodeView>().ToList();
+            var selectedNodes = selection.OfType<BTNodeView>()
+                .Where(nv => BTNodeEditorService.CanDuplicateNode(nv.Node, behaviorTree))
+                .ToList();
+            
             foreach (var nodeView in selectedNodes)
             {
                 DuplicateNode(nodeView);
@@ -495,17 +518,23 @@ namespace MonsterBT.Editor
 
         private void BuildNodeContextMenu(ContextualMenuPopulateEvent evt, BTNodeView nodeView)
         {
+            var node = nodeView.Node;
+            var canCopy = BTNodeEditorService.CanCopyNode(node, behaviorTree);
+            var canCut = BTNodeEditorService.CanCutNode(node, behaviorTree);
+            var canDuplicate = BTNodeEditorService.CanDuplicateNode(node, behaviorTree);
+            var canDelete = BTNodeEditorService.CanDeleteNode(node);
+
             // 基本操作
-            evt.menu.AppendAction("Copy", _ => CopyNode(nodeView), DropdownMenuAction.AlwaysEnabled);
-            evt.menu.AppendAction("Cut", _ => CutNode(nodeView), DropdownMenuAction.AlwaysEnabled);
-            evt.menu.AppendAction("Duplicate", _ => DuplicateNode(nodeView), DropdownMenuAction.AlwaysEnabled);
-            evt.menu.AppendAction("Delete", _ => DeleteNode(nodeView), DropdownMenuAction.AlwaysEnabled);
+            evt.menu.AppendAction("Copy", _ => CopyNode(nodeView),
+                canCopy ? DropdownMenuAction.AlwaysEnabled : DropdownMenuAction.AlwaysDisabled);
+            evt.menu.AppendAction("Cut", _ => CutNode(nodeView),
+                canCut ? DropdownMenuAction.AlwaysEnabled : DropdownMenuAction.AlwaysDisabled);
+            evt.menu.AppendAction("Duplicate", _ => DuplicateNode(nodeView),
+                canDuplicate ? DropdownMenuAction.AlwaysEnabled : DropdownMenuAction.AlwaysDisabled);
+            evt.menu.AppendAction("Delete", _ => DeleteNode(nodeView),
+                canDelete ? DropdownMenuAction.AlwaysEnabled : DropdownMenuAction.AlwaysDisabled);
         }
 
-        /// <summary>
-        /// 实际地创建一个节点，会同时创建持久化的SO和Editor下的NodeView视图
-        /// </summary>
-        /// <typeparam name="T">节点类型，需继承BTNode</typeparam>
         public void CreateNode<T>() where T : BTNode
         {
             if (behaviorTree == null)
@@ -519,10 +548,6 @@ namespace MonsterBT.Editor
             nodeView.SetPosition(new Rect(mousePosition, Vector2.zero));
         }
 
-        /// <summary>
-        /// 同上创建节点SO+创建节点GraphView视图(无泛型，手动约束)
-        /// </summary>
-        /// <param name="type">节点类型</param>
         public void CreateNode(Type type)
         {
             if (behaviorTree == null)
@@ -538,12 +563,24 @@ namespace MonsterBT.Editor
 
         private void CopyNode(BTNodeView nodeView)
         {
+            if (!BTNodeEditorService.CanCopyNode(nodeView.Node, behaviorTree))
+            {
+                Debug.LogWarning("Cannot copy root node!");
+                return;
+            }
+
             copiedNode = nodeView.Node;
         }
 
 
         private void CutNode(BTNodeView nodeView)
         {
+            if (!BTNodeEditorService.CanCutNode(nodeView.Node, behaviorTree))
+            {
+                Debug.LogWarning("Cannot cut root node!");
+                return;
+            }
+
             CopyNode(nodeView);
             DeleteNode(nodeView);
         }
@@ -552,6 +589,12 @@ namespace MonsterBT.Editor
         {
             if (behaviorTree == null || nodeView?.Node == null || nodeView.Node.Equals(null))
                 return;
+
+            if (!BTNodeEditorService.CanDuplicateNode(nodeView.Node, behaviorTree))
+            {
+                Debug.LogWarning("Cannot duplicate root node!");
+                return;
+            }
 
             try
             {
@@ -646,6 +689,13 @@ namespace MonsterBT.Editor
             if (copiedNode.Equals(null))
             {
                 Debug.LogWarning("Copied node has been destroyed.");
+                copiedNode = null;
+                return;
+            }
+
+            if (!BTNodeEditorService.CanCopyNode(copiedNode, behaviorTree))
+            {
+                Debug.LogWarning("Cannot paste root node!");
                 copiedNode = null;
                 return;
             }

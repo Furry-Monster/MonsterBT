@@ -152,5 +152,37 @@ namespace MonsterBT.Editor.Services
         {
             return node is not RootNode;
         }
+
+        public static bool IsRootNode(BTNode node, BehaviorTree behaviorTree)
+        {
+            if (node == null || behaviorTree == null)
+                return false;
+
+            return node is RootNode && behaviorTree.RootNode == node;
+        }
+
+        public static bool CanCopyNode(BTNode node, BehaviorTree behaviorTree)
+        {
+            if (node == null || behaviorTree == null)
+                return false;
+
+            return !IsRootNode(node, behaviorTree);
+        }
+
+        public static bool CanCutNode(BTNode node, BehaviorTree behaviorTree)
+        {
+            if (node == null || behaviorTree == null)
+                return false;
+
+            return !IsRootNode(node, behaviorTree);
+        }
+
+        public static bool CanDuplicateNode(BTNode node, BehaviorTree behaviorTree)
+        {
+            if (node == null || behaviorTree == null)
+                return false;
+
+            return !IsRootNode(node, behaviorTree);
+        }
     }
 }
