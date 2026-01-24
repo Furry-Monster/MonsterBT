@@ -96,20 +96,42 @@ namespace MonsterBT.Editor.Service.Misc
             var infoRow = new VisualElement();
             infoRow.AddToClassList("blackboard-variable-info");
 
-            var nameField = new TextField { value = varName };
+            var nameField = new TextField { value = varName, isDelayed = true };
             nameField.AddToClassList("blackboard-variable-name");
-            nameField.RegisterCallback<FocusOutEvent, string>((evt, originalName) =>
+            
+            // 保存原始名称，用于重命名
+            var originalName = varName;
+            
+            // 处理重命名的辅助方法
+            Action<string> applyRename = (newName) =>
             {
-                if (evt.target is TextField textField)
+                if (string.IsNullOrEmpty(newName) || originalName == newName)
+                    return;
+                
+                UnityEditor.Undo.RecordObject(behaviorTree.Blackboard,
+                    $"Rename Blackboard Variable: {originalName}");
+                RenameVariable(originalName, newName);
+            };
+            
+            // 使用 isDelayed 时，ValueChanged 事件会在失焦时触发
+            nameField.RegisterValueChangedCallback(evt =>
+            {
+                applyRename(evt.newValue);
+            });
+            
+            // 监听回车键事件，立即应用
+            nameField.RegisterCallback<KeyDownEvent>(evt =>
+            {
+                if (evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter)
                 {
-                    if (textField.value != originalName)
+                    if (evt.target is TextField textField)
                     {
-                        UnityEditor.Undo.RecordObject(behaviorTree.Blackboard,
-                            $"Rename Blackboard Variable: {originalName}");
-                        RenameVariable(originalName, textField.value);
+                        applyRename(textField.value);
+                        textField.Blur();
+                        evt.StopPropagation();
                     }
                 }
-            }, varName);
+            });
 
             var typeLabel = new Label(GetTypeDisplayName(varType));
             typeLabel.AddToClassList("blackboard-variable-type");
