@@ -5,8 +5,8 @@ namespace MonsterBT.Runtime.Actions
     [CreateAssetMenu(fileName = "DebugLogAction", menuName = "MonsterBTNode/Actions/DebugLogAction")]
     public class DebugLogAction : ActionNode
     {
-        [SerializeField][Tooltip("Êä³öµÄÏûÏ¢")] private string message = "Debug Log Action";
-        [SerializeField][Tooltip("ÏûÏ¢Êä³öµÄ¼¶±ğ")] private LogType logType = LogType.Log;
+        [SerializeField][Tooltip("è¾“å‡ºçš„æ¶ˆæ¯")] private string message = "Debug Log Action";
+        [SerializeField][Tooltip("æ¶ˆæ¯è¾“å‡ºçš„çº§åˆ«")] private LogType logType = LogType.Log;
 
         protected override BTNodeState OnUpdate()
         {

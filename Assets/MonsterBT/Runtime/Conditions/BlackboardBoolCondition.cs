@@ -7,7 +7,7 @@ namespace MonsterBT.Runtime.Conditions
     public class BlackboardBoolCondition : ActionNode
     {
         [SerializeField] private string keyName = "boolKey";
-        [SerializeField][Tooltip("ÈôÎª´ËÖµ,Ôò½Úµã·µ»ØÖ´ĞĞ³É¹¦,·ñÔòÊ§°Ü")] private bool expectedValue = true;
+        [SerializeField][Tooltip("è‹¥ä¸ºæ­¤å€¼,åˆ™èŠ‚ç‚¹è¿”å›æ‰§è¡ŒæˆåŠŸ,å¦åˆ™å¤±è´¥")] private bool expectedValue = true;
 
         protected override BTNodeState OnUpdate()
         {

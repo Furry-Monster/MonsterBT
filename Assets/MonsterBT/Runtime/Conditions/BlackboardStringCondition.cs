@@ -17,9 +17,9 @@ namespace MonsterBT.Runtime.Conditions
     public class BlackboardStringCondition : ActionNode
     {
         [SerializeField] private string keyName = "stringKey";
-        [SerializeField][Tooltip("×Ö·û´®¹æÔò")] private StringComparison comparisonType = StringComparison.Equals;
+        [SerializeField][Tooltip("å­—ç¬¦ä¸²è§„åˆ™")] private StringComparison comparisonType = StringComparison.Equals;
         [SerializeField] private string expectedValue = "";
-        [SerializeField][Tooltip("ÊÇ·ñ´óĞ¡Ğ´Ãô¸Ğ")] private bool caseSensitive = true;
+        [SerializeField][Tooltip("æ˜¯å¦å¤§å°å†™æ•æ„Ÿ")] private bool caseSensitive = true;
 
         protected override BTNodeState OnUpdate()
         {
