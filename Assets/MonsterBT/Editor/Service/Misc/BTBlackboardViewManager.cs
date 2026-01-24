@@ -102,7 +102,11 @@ namespace MonsterBT.Editor.Service.Misc
             {
                 if (evt.target is TextField textField)
                 {
-                    RenameVariable(originalName, textField.value);
+                    if (textField.value != originalName)
+                    {
+                        UnityEditor.Undo.RecordObject(behaviorTree.Blackboard, $"Rename Blackboard Variable: {originalName}");
+                        RenameVariable(originalName, textField.value);
+                    }
                 }
             }, varName);
 
@@ -134,15 +138,20 @@ namespace MonsterBT.Editor.Service.Misc
 
         private VisualElement CreateValueEditor(string varName, Type varType)
         {
-            var callback = new Action(() => BTEditorAssetService.MarkDirty(behaviorTree.Blackboard));
+            var callback = new Action(() =>
+            {
+                UnityEditor.Undo.RecordObject(behaviorTree.Blackboard, $"Change Blackboard Value: {varName}");
+                BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
+            });
 
             if (varType == typeof(bool))
             {
                 var toggle = new Toggle { value = behaviorTree.Blackboard.GetBool(varName) };
                 toggle.RegisterValueChangedCallback(evt =>
                 {
+                    UnityEditor.Undo.RecordObject(behaviorTree.Blackboard, $"Change Blackboard Value: {varName}");
                     behaviorTree.Blackboard.SetBool(varName, evt.newValue);
-                    callback();
+                    BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
                 });
                 return toggle;
             }
@@ -152,8 +161,9 @@ namespace MonsterBT.Editor.Service.Misc
                 var floatField = new FloatField { value = behaviorTree.Blackboard.GetFloat(varName) };
                 floatField.RegisterValueChangedCallback(evt =>
                 {
+                    UnityEditor.Undo.RecordObject(behaviorTree.Blackboard, $"Change Blackboard Value: {varName}");
                     behaviorTree.Blackboard.SetFloat(varName, evt.newValue);
-                    callback();
+                    BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
                 });
                 return floatField;
             }
@@ -163,8 +173,9 @@ namespace MonsterBT.Editor.Service.Misc
                 var textField = new TextField { value = behaviorTree.Blackboard.GetString(varName) };
                 textField.RegisterValueChangedCallback(evt =>
                 {
+                    UnityEditor.Undo.RecordObject(behaviorTree.Blackboard, $"Change Blackboard Value: {varName}");
                     behaviorTree.Blackboard.SetString(varName, evt.newValue);
-                    callback();
+                    BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
                 });
                 return textField;
             }
@@ -174,8 +185,9 @@ namespace MonsterBT.Editor.Service.Misc
                 var vector3Field = new Vector3Field { value = behaviorTree.Blackboard.GetVector3(varName) };
                 vector3Field.RegisterValueChangedCallback(evt =>
                 {
+                    UnityEditor.Undo.RecordObject(behaviorTree.Blackboard, $"Change Blackboard Value: {varName}");
                     behaviorTree.Blackboard.SetVector3(varName, evt.newValue);
-                    callback();
+                    BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
                 });
                 return vector3Field;
             }
@@ -189,8 +201,9 @@ namespace MonsterBT.Editor.Service.Misc
                 };
                 objectField.RegisterValueChangedCallback(evt =>
                 {
+                    UnityEditor.Undo.RecordObject(behaviorTree.Blackboard, $"Change Blackboard Value: {varName}");
                     behaviorTree.Blackboard.SetGameObject(varName, evt.newValue as GameObject);
-                    callback();
+                    BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
                 });
                 return objectField;
             }
