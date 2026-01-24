@@ -34,7 +34,9 @@ namespace MonsterBT.Runtime
                 var state = runtimeTree.Update();
 
                 if (debugMode)
-                    Debug.Log($"[BehaviorTreeRunner] Tree state: {state}");
+                {
+                    Debug.Log($"[BehaviorTreeRunner] Tree state: {state}, Tree: {behaviorTreeAsset?.name}");
+                }
 
                 // 根据需要处理树的完成状态
                 if (state is BTNodeState.Success or BTNodeState.Failure)

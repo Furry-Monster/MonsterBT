@@ -4697,7 +4697,7 @@ MonoBehaviour:
   behaviorTreeAsset: {fileID: 11400000, guid: f83d8a702f1c1bc4f836258944a71c82, type: 2}
   runOnStart: 1
   loop: 0
-  debugMode: 0
+  debugMode: 1
 --- !u!195 &5219768215559726674
 NavMeshAgent:
   m_ObjectHideFlags: 0
