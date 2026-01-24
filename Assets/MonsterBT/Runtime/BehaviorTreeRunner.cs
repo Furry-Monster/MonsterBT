@@ -14,6 +14,7 @@ namespace MonsterBT.Runtime
 
         private BehaviorTree runtimeTree;
         private bool isRunning;
+        private BTNodeState lastState = BTNodeState.Running;
 
         public BehaviorTree RuntimeTree => runtimeTree;
         public bool IsRunning => isRunning;
@@ -33,16 +34,20 @@ namespace MonsterBT.Runtime
             {
                 var state = runtimeTree.Update();
 
-                if (debugMode)
+                if (debugMode && state != lastState)
                 {
-                    Debug.Log($"[BehaviorTreeRunner] Tree state: {state}, Tree: {behaviorTreeAsset?.name}");
+                    Debug.Log($"[BT] [{gameObject.name}] State: {lastState} -> {state} | Tree: {behaviorTreeAsset?.name}");
+                    lastState = state;
                 }
 
-                // 根据需要处理树的完成状态
                 if (state is BTNodeState.Success or BTNodeState.Failure)
                 {
                     if (!loop)
                     {
+                        if (debugMode)
+                        {
+                            Debug.Log($"[BT] [{gameObject.name}] Tree completed: {state} | Tree: {behaviorTreeAsset?.name}");
+                        }
                         StopTree();
                     }
                 }
@@ -56,18 +61,25 @@ namespace MonsterBT.Runtime
                 runtimeTree = behaviorTreeAsset.Clone();
                 runtimeTree.Initialize();
 
-                // 设置一些默认的黑板值
                 if (runtimeTree.Blackboard != null)
                 {
                     runtimeTree.Blackboard.SetGameObject("Owner", gameObject);
                     runtimeTree.Blackboard.SetTransform("OwnerTransform", transform);
                     runtimeTree.Blackboard.SetGameObject("MainCamera", Camera.main?.gameObject);
+                    runtimeTree.Blackboard.SetBool("DebugMode", debugMode);
                 }
 
                 isRunning = true;
+                lastState = BTNodeState.Running;
 
                 if (debugMode)
-                    Debug.Log($"[BehaviorTreeRunner] Started behavior tree: {behaviorTreeAsset.name}");
+                {
+                    Debug.Log($"[BT] [{gameObject.name}] Started tree: {behaviorTreeAsset.name}");
+                }
+            }
+            else if (debugMode)
+            {
+                Debug.LogWarning($"[BT] [{gameObject.name}] No behavior tree asset assigned");
             }
         }
 
@@ -80,11 +92,17 @@ namespace MonsterBT.Runtime
             isRunning = false;
 
             if (debugMode)
-                Debug.Log("[BehaviorTreeRunner] Stopped behavior tree");
+            {
+                Debug.Log($"[BT] [{gameObject.name}] Stopped tree: {behaviorTreeAsset?.name}");
+            }
         }
 
         public void RestartTree()
         {
+            if (debugMode)
+            {
+                Debug.Log($"[BT] [{gameObject.name}] Restarting tree: {behaviorTreeAsset?.name}");
+            }
             StopTree();
             StartTree();
         }

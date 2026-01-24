@@ -36,7 +36,13 @@ namespace MonsterBT.Runtime
         protected override BTNodeState OnUpdate()
         {
             if (child == null)
+            {
+                if (IsDebugMode())
+                {
+                    Debug.LogWarning("[BT] Root node has no child");
+                }
                 return BTNodeState.Failure;
+            }
 
             return child.Update();
         }

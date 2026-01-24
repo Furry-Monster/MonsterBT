@@ -50,17 +50,35 @@ namespace MonsterBT.Runtime
             {
                 OnStart();
                 started = true;
+                if (IsDebugMode())
+                {
+                    Debug.Log($"[BT] Node started: {GetNodeName()}");
+                }
             }
 
             state = OnUpdate();
 
             if (state is BTNodeState.Success or BTNodeState.Failure)
             {
+                if (IsDebugMode())
+                {
+                    Debug.Log($"[BT] Node finished: {GetNodeName()} -> {state}");
+                }
                 OnStop();
                 started = false;
             }
 
             return state;
+        }
+
+        protected bool IsDebugMode()
+        {
+            return blackboard != null && blackboard.GetBool("DebugMode");
+        }
+
+        protected string GetNodeName()
+        {
+            return string.IsNullOrEmpty(name) ? GetType().Name : name;
         }
 
         public virtual BTNode Clone()

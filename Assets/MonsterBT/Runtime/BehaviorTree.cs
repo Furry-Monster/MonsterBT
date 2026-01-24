@@ -47,15 +47,26 @@ namespace MonsterBT.Runtime
 
         public BTNodeState Update()
         {
-            treeState = rootNode != null
-                ? rootNode.Update()
-                : BTNodeState.Failure;
+            if (rootNode == null)
+            {
+                if (blackboard != null && blackboard.GetBool("DebugMode"))
+                {
+                    Debug.LogWarning("[BT] Tree has no root node");
+                }
+                treeState = BTNodeState.Failure;
+                return treeState;
+            }
 
+            treeState = rootNode.Update();
             return treeState;
         }
 
         public void Abort()
         {
+            if (blackboard != null && blackboard.GetBool("DebugMode"))
+            {
+                Debug.Log("[BT] Tree aborted");
+            }
             rootNode?.Abort();
             treeState = BTNodeState.Failure;
         }
