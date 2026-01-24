@@ -79,13 +79,7 @@ namespace MonsterBT.Editor.Services
                 objectType = typeof(GameObject),
                 value = (GameObject)field.GetValue(node)
             };
-            objectField.RegisterValueChangedCallback(evt =>
-            {
-                Undo.RecordObject(node, $"Change {displayName}");
-                field.SetValue(node, evt.newValue);
-                EditorUtility.SetDirty(node);
-                BTEditorEventBus.PublishPropertyChanged(node, field.Name);
-            });
+            objectField.RegisterValueChangedCallback(CreateObjectFieldChangeCallback(field, node, displayName));
             return objectField;
         }
 
@@ -111,14 +105,20 @@ namespace MonsterBT.Editor.Services
                 objectType = fieldType,
                 value = field.GetValue(node) as UnityEngine.Object
             };
-            objectField.RegisterValueChangedCallback(evt =>
+            objectField.RegisterValueChangedCallback(CreateObjectFieldChangeCallback(field, node, displayName));
+            return objectField;
+        }
+
+        private static EventCallback<ChangeEvent<UnityEngine.Object>> CreateObjectFieldChangeCallback(
+            FieldInfo field, BTNode node, string displayName)
+        {
+            return evt =>
             {
                 Undo.RecordObject(node, $"Change {displayName}");
                 field.SetValue(node, evt.newValue);
                 EditorUtility.SetDirty(node);
                 BTEditorEventBus.PublishPropertyChanged(node, field.Name);
-            });
-            return objectField;
+            };
         }
 
         public static ObjectField CreateTransformField(FieldInfo field, BTNode node, string displayName)

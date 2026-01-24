@@ -41,7 +41,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Composite.Parallel
   description: 
   position: {x: 629.6, y: 112.8}
-  children: []
+  children:
+  - {fileID: 6809713183864359431}
   finishMode: 0
   successCount: 1
   failureCount: 1
@@ -58,5 +59,22 @@ MonoBehaviour:
   m_Name: Root
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.RootNode
   description: 
-  position: {x: 400, y: 99.2}
+  position: {x: 393.00403, y: 112.8}
   child: {fileID: 5494766150957365830}
+--- !u!114 &6809713183864359431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff6d4134355602cc39ce7a2890970f04, type: 3}
+  m_Name: MoveToTargetAction
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Actions.MoveToTargetAction
+  description: 
+  position: {x: 904.4207, y: 112.8}
+  targetKey: Target
+  speed: 5
+  stoppingDistance: 0.1

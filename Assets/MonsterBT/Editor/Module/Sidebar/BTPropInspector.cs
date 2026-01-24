@@ -67,39 +67,35 @@ namespace MonsterBT.Editor
 
         private void BuildGeneralProps(BTNode node)
         {
-            // 节点名称
-            var nameField = new TextField("Name")
-            {
-                value = node.name
-            };
+            var nameField = new TextField("Name") { value = node.name };
             nameField.AddToClassList("inspector-field");
-            nameField.RegisterValueChangedCallback(evt =>
-            {
-                Undo.RecordObject(node, "Change Node Name");
-                node.name = evt.newValue;
-                EditorUtility.SetDirty(node);
-                BTEditorEventBus.PublishPropertyChanged(node, "name");
-            });
+            nameField.RegisterValueChangedCallback(CreateNodePropertyChangeCallback(node, "name", "Change Node Name",
+                (n, v) => n.name = v));
             contentScrollView.Add(nameField);
 
-            // 节点描述
             var descriptionField = new TextField("Description")
             {
                 value = node.Description ?? "",
                 multiline = true
             };
             descriptionField.AddToClassList("description-field");
-            descriptionField.RegisterValueChangedCallback(evt =>
-            {
-                Undo.RecordObject(node, "Change Node Description");
-                node.Description = evt.newValue;
-                EditorUtility.SetDirty(node);
-                BTEditorEventBus.PublishPropertyChanged(node, "description");
-            });
+            descriptionField.RegisterValueChangedCallback(CreateNodePropertyChangeCallback(node, "description",
+                "Change Node Description", (n, v) => n.Description = v));
             contentScrollView.Add(descriptionField);
 
-            // 自定义属性
             BuildCustomProps(node);
+        }
+
+        private EventCallback<ChangeEvent<string>> CreateNodePropertyChangeCallback(
+            BTNode node, string propertyName, string undoMessage, System.Action<BTNode, string> setter)
+        {
+            return evt =>
+            {
+                Undo.RecordObject(node, undoMessage);
+                setter(node, evt.newValue);
+                EditorUtility.SetDirty(node);
+                BTEditorEventBus.PublishPropertyChanged(node, propertyName);
+            };
         }
 
         private void BuildCustomProps(BTNode node)
