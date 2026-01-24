@@ -5,11 +5,9 @@ using MonsterBT.Editor.Services;
 using MonsterBT.Runtime;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Blackboard = UnityEditor.Experimental.GraphView.Blackboard;
-using Object = UnityEngine.Object;
 
 namespace MonsterBT.Editor
 {
@@ -17,8 +15,10 @@ namespace MonsterBT.Editor
     {
         private BehaviorTree behaviorTree;
         private readonly Dictionary<BTNode, BTNodeView> nodeViews;
-
-        #region Content Methods
+        private BTBlackboardViewManager blackboardManager;
+        private BTNodeOperationService nodeOperationService;
+        private BTGraphCommandHandler commandHandler;
+        private BTGraphContextMenuBuilder contextMenuBuilder;
 
         public BTNodeGraphView()
         {
@@ -39,10 +39,12 @@ namespace MonsterBT.Editor
             miniMap.AddToClassList("mini-map");
             Add(miniMap);
 
-            var blackboard = new Blackboard { name = "blackboard", title = "Variables" };
-            blackboard.AddToClassList("blackboard");
-            blackboard.addItemRequested += _ => Debug.Log("I don't know how to make this invisible.");
-            Add(blackboard);
+            var blackboardView = new Blackboard { name = "blackboard", title = "Variables" };
+            blackboardView.AddToClassList("blackboard");
+            blackboardView.addItemRequested += _ => Debug.Log("I don't know how to make this invisible.");
+            Add(blackboardView);
+
+            blackboardManager = new BTBlackboardViewManager(null, blackboardView);
 
             // 添加grid
             var grid = new GridBackground();
@@ -53,8 +55,12 @@ namespace MonsterBT.Editor
             AddToClassList("node-graph-view");
 
             graphViewChanged += OnGraphViewChanged;
-            RegisterCallback<ExecuteCommandEvent>(OnExecuteCommand);
-            RegisterCallback<ValidateCommandEvent>(OnValidateCommand);
+
+            commandHandler = new BTGraphCommandHandler(this, null);
+            RegisterCallback<ExecuteCommandEvent>(commandHandler.HandleExecuteCommand);
+            RegisterCallback<ValidateCommandEvent>(commandHandler.HandleValidateCommand);
+
+            contextMenuBuilder = new BTGraphContextMenuBuilder(this, blackboardManager, null);
 
             PopulateView();
         }
@@ -62,92 +68,10 @@ namespace MonsterBT.Editor
         ~BTNodeGraphView()
         {
             graphViewChanged -= OnGraphViewChanged;
-            UnregisterCallback<ExecuteCommandEvent>(OnExecuteCommand);
-            UnregisterCallback<ValidateCommandEvent>(OnValidateCommand);
-        }
-
-        private void OnExecuteCommand(ExecuteCommandEvent evt)
-        {
-            var commandName = evt.commandName;
-
-            switch (commandName)
+            if (commandHandler != null)
             {
-                case "Copy":
-                    CopySelectedNodes();
-                    evt.StopPropagation();
-                    break;
-
-                case "Paste":
-                    PasteNode();
-                    evt.StopPropagation();
-                    break;
-
-                case "Cut":
-                    CutSelectedNodes();
-                    evt.StopPropagation();
-                    break;
-
-                case "Delete":
-                case "SoftDelete":
-                    DeleteSelectedNodes();
-                    evt.StopPropagation();
-                    break;
-
-                case "Duplicate":
-                    DuplicateSelectedNodes();
-                    evt.StopPropagation();
-                    break;
-            }
-        }
-
-        private void OnValidateCommand(ValidateCommandEvent evt)
-        {
-            var commandName = evt.commandName;
-
-            switch (commandName)
-            {
-                case "Paste":
-                    // 只有在有复制节点时才允许粘贴
-                    if (copiedNode != null)
-                        evt.StopPropagation();
-                    break;
-
-                case "Copy":
-                    // 只有在有选中节点且可以复制时才允许
-                    var copyableNodes = selection.OfType<BTNodeView>()
-                        .Where(nv => BTNodeEditorService.CanCopyNode(nv.Node, behaviorTree))
-                        .ToList();
-                    if (copyableNodes.Count > 0)
-                        evt.StopPropagation();
-                    break;
-
-                case "Cut":
-                    // 只有在有选中节点且可以剪切时才允许
-                    var cuttableNodes = selection.OfType<BTNodeView>()
-                        .Where(nv => BTNodeEditorService.CanCutNode(nv.Node, behaviorTree))
-                        .ToList();
-                    if (cuttableNodes.Count > 0)
-                        evt.StopPropagation();
-                    break;
-
-                case "Delete":
-                case "SoftDelete":
-                    // 只有在有选中节点且可以删除时才允许
-                    var deletableNodes = selection.OfType<BTNodeView>()
-                        .Where(nv => BTNodeEditorService.CanDeleteNode(nv.Node))
-                        .ToList();
-                    if (deletableNodes.Count > 0)
-                        evt.StopPropagation();
-                    break;
-
-                case "Duplicate":
-                    // 只有在有选中节点且可以重复时才允许
-                    var duplicatableNodes = selection.OfType<BTNodeView>()
-                        .Where(nv => BTNodeEditorService.CanDuplicateNode(nv.Node, behaviorTree))
-                        .ToList();
-                    if (duplicatableNodes.Count > 0)
-                        evt.StopPropagation();
-                    break;
+                UnregisterCallback<ExecuteCommandEvent>(commandHandler.HandleExecuteCommand);
+                UnregisterCallback<ValidateCommandEvent>(commandHandler.HandleValidateCommand);
             }
         }
 
@@ -160,13 +84,28 @@ namespace MonsterBT.Editor
                 BTAssetService.AutoFixBehaviourTree(tree);
             }
 
+            if (blackboardManager != null)
+            {
+                var blackboardView = this.Q<Blackboard>();
+                blackboardManager = new BTBlackboardViewManager(tree, blackboardView);
+            }
+
+            if (commandHandler != null)
+            {
+                commandHandler = new BTGraphCommandHandler(this, tree);
+            }
+
+            if (contextMenuBuilder != null)
+            {
+                contextMenuBuilder = new BTGraphContextMenuBuilder(this, blackboardManager, tree);
+            }
+
+            nodeOperationService = new BTNodeOperationService(tree, nodeViews, this);
+
             PopulateView();
             RefreshBlackboardView();
         }
 
-        /// <summary>
-        /// 广播视图更新，此方法将从头递归地、重新加载整个行为树视图，不应频繁调用
-        /// </summary>
         public void PopulateView()
         {
             // 清除现有内容
@@ -177,15 +116,14 @@ namespace MonsterBT.Editor
 
             graphViewChanged += OnGraphViewChanged;
 
-            // 填充视图
             if (behaviorTree?.RootNode != null && !behaviorTree.RootNode.Equals(null))
             {
-                var rootView = CreateNodeViewFromNode(behaviorTree.RootNode);
+                var rootView = CreateViewForNode(behaviorTree.RootNode);
                 if (rootView == null)
                     return;
 
                 CreateNodeViewsRecursive(behaviorTree.RootNode);
-                CreateIsolatedNodes();
+                LoadOrphanedNodes();
                 CreateConnections();
             }
         }
@@ -200,30 +138,27 @@ namespace MonsterBT.Editor
                 if (child == null || child.Equals(null))
                     continue;
 
-                CreateNodeViewFromNode(child);
+                CreateViewForNode(child);
                 CreateNodeViewsRecursive(child);
             }
         }
 
-        /// <summary>
-        /// 加载所有存储在BehaviorTreeAsset中但尚未连接的节点
-        /// </summary>
-        private void CreateIsolatedNodes()
+        private void LoadOrphanedNodes()
         {
             if (behaviorTree == null)
                 return;
 
-            var isolatedNodes = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GetAssetPath(behaviorTree))
+            var orphanedNodes = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GetAssetPath(behaviorTree))
                 .OfType<BTNode>()
-                .Where(node => node != null && !node.Equals(null)) // 过滤已销毁的节点
-                .Where(node => !nodeViews.ContainsKey(node)) // 过滤已创建的节点
+                .Where(node => node != null && !node.Equals(null))
+                .Where(node => !nodeViews.ContainsKey(node))
                 .ToList();
 
-            foreach (var node in isolatedNodes)
-                CreateNodeViewFromNode(node);
+            foreach (var node in orphanedNodes)
+                CreateViewForNode(node);
         }
 
-        private BTNodeView CreateNodeViewFromNode(BTNode node)
+        private BTNodeView CreateViewForNode(BTNode node)
         {
             if (node == null || node.Equals(null))
                 return null;
@@ -274,9 +209,6 @@ namespace MonsterBT.Editor
             AddElement(edge);
         }
 
-        /// <summary>
-        /// 仅仅更新修改过的GraphView元素，相比广播，性能更优，通过事件自动调用
-        /// </summary>
         private GraphViewChange OnGraphViewChanged(GraphViewChange graphViewChange)
         {
             // 处理删除的元素
@@ -321,7 +253,10 @@ namespace MonsterBT.Editor
                         continue;
                     }
 
-                    RemoveNodeFromGraph(nodeView.Node, nodeView);
+                    if (nodeOperationService != null)
+                    {
+                        nodeOperationService.RemoveNodeFromGraph(nodeView.Node, nodeView);
+                    }
                 }
 
                 if (nodesToRemove.Count > 0 && behaviorTree != null)
@@ -372,11 +307,7 @@ namespace MonsterBT.Editor
                 .ToList();
         }
 
-        #endregion
-
-        #region HotKey Methods
-
-        private void CopySelectedNodes()
+        public void CopySelectedNodes()
         {
             var selectedNodes = selection.OfType<BTNodeView>()
                 .Where(nv => BTNodeEditorService.CanCopyNode(nv.Node, behaviorTree))
@@ -389,13 +320,13 @@ namespace MonsterBT.Editor
             }
         }
 
-        private void CutSelectedNodes()
+        public void CutSelectedNodes()
         {
             CopySelectedNodes();
             DeleteSelectedNodes();
         }
 
-        private void DeleteSelectedNodes()
+        public void DeleteSelectedNodes()
         {
             var selectedNodes = selection.OfType<BTNodeView>()
                 .Where(nv => BTNodeEditorService.CanDeleteNode(nv.Node))
@@ -407,7 +338,7 @@ namespace MonsterBT.Editor
             }
         }
 
-        private void DuplicateSelectedNodes()
+        public void DuplicateSelectedNodes()
         {
             var selectedNodes = selection.OfType<BTNodeView>()
                 .Where(nv => BTNodeEditorService.CanDuplicateNode(nv.Node, behaviorTree))
@@ -419,101 +350,19 @@ namespace MonsterBT.Editor
             }
         }
 
-        #endregion
-
-        #region ContextMenu Methods
-
-        private BTNode copiedNode; // 拷贝缓冲
+        private BTNode copiedNode;
         private Vector2 mousePosition;
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
             mousePosition = evt.localMousePosition;
-
-            switch (evt.target)
+            if (contextMenuBuilder != null)
             {
-                case GraphView:
-                    BuildGraphContextMenu(evt);
-                    break;
-                case BTNodeView nodeView:
-                    BuildNodeContextMenu(evt, nodeView);
-                    break;
+                contextMenuBuilder.BuildContextualMenu(evt, evt.localMousePosition);
             }
         }
 
-        private void BuildGraphContextMenu(ContextualMenuPopulateEvent evt)
-        {
-            // 自动生成所有节点类型的菜单
-            BuildNodeCreationMenu(evt);
-
-            // Blackboard变量管理
-            evt.menu.AppendAction("Blackboard/Add Boolean", _ => AddBlackboardVariable("NewBool", typeof(bool)),
-                DropdownMenuAction.AlwaysEnabled);
-            evt.menu.AppendAction("Blackboard/Add Float", _ => AddBlackboardVariable("NewFloat", typeof(float)),
-                DropdownMenuAction.AlwaysEnabled);
-            evt.menu.AppendAction("Blackboard/Add Vector3", _ => AddBlackboardVariable("NewVector3", typeof(Vector3)),
-                DropdownMenuAction.AlwaysEnabled);
-            evt.menu.AppendAction("Blackboard/Add GameObject",
-                _ => AddBlackboardVariable("NewGameObject", typeof(GameObject)), DropdownMenuAction.AlwaysEnabled);
-            evt.menu.AppendAction("Blackboard/Add String", _ => AddBlackboardVariable("NewString", typeof(string)),
-                DropdownMenuAction.AlwaysEnabled);
-            evt.menu.AppendAction("Blackboard/Refresh", _ => RefreshBlackboardView(), DropdownMenuAction.AlwaysEnabled);
-
-            // 粘贴功能
-            evt.menu.AppendAction("Paste", _ => PasteNode(),
-                action => copiedNode == null
-                    ? DropdownMenuAction.AlwaysDisabled(action)
-                    : DropdownMenuAction.AlwaysEnabled(action));
-            // 重新载入
-            evt.menu.AppendAction("Reload", _ => PopulateView(), DropdownMenuAction.AlwaysEnabled);
-        }
-
-        private void BuildNodeContextMenu(ContextualMenuPopulateEvent evt, BTNodeView nodeView)
-        {
-            var node = nodeView.Node;
-            var canCopy = BTNodeEditorService.CanCopyNode(node, behaviorTree);
-            var canCut = BTNodeEditorService.CanCutNode(node, behaviorTree);
-            var canDuplicate = BTNodeEditorService.CanDuplicateNode(node, behaviorTree);
-            var canDelete = BTNodeEditorService.CanDeleteNode(node);
-
-            // 基本操作
-            evt.menu.AppendAction("Copy", _ => CopyNode(nodeView),
-                canCopy ? DropdownMenuAction.AlwaysEnabled : DropdownMenuAction.AlwaysDisabled);
-            evt.menu.AppendAction("Cut", _ => CutNode(nodeView),
-                canCut ? DropdownMenuAction.AlwaysEnabled : DropdownMenuAction.AlwaysDisabled);
-            evt.menu.AppendAction("Duplicate", _ => DuplicateNode(nodeView),
-                canDuplicate ? DropdownMenuAction.AlwaysEnabled : DropdownMenuAction.AlwaysDisabled);
-            evt.menu.AppendAction("Delete", _ => DeleteNode(nodeView),
-                canDelete ? DropdownMenuAction.AlwaysEnabled : DropdownMenuAction.AlwaysDisabled);
-        }
-
-        public void CreateNode<T>() where T : BTNode
-        {
-            if (behaviorTree == null)
-                return;
-
-            var node = BTEditorAssetService.CreateNodeInAsset(behaviorTree, typeof(T));
-            if (node == null)
-                return;
-
-            var nodeView = CreateNodeViewFromNode(node);
-            nodeView.SetPosition(new Rect(mousePosition, Vector2.zero));
-        }
-
-        public void CreateNode(Type type)
-        {
-            if (behaviorTree == null)
-                return;
-
-            var node = BTEditorAssetService.CreateNodeInAsset(behaviorTree, type);
-            if (node == null)
-                return;
-
-            var nodeView = CreateNodeViewFromNode(node);
-            nodeView.SetPosition(new Rect(mousePosition, Vector2.zero));
-        }
-
-        private void CopyNode(BTNodeView nodeView)
+        public void CopyNode(BTNodeView nodeView)
         {
             if (!BTNodeEditorService.CanCopyNode(nodeView.Node, behaviorTree))
             {
@@ -524,8 +373,7 @@ namespace MonsterBT.Editor
             copiedNode = nodeView.Node;
         }
 
-
-        private void CutNode(BTNodeView nodeView)
+        public void CutNode(BTNodeView nodeView)
         {
             if (!BTNodeEditorService.CanCutNode(nodeView.Node, behaviorTree))
             {
@@ -537,344 +385,74 @@ namespace MonsterBT.Editor
             DeleteNode(nodeView);
         }
 
-        private void DuplicateNode(BTNodeView nodeView)
+        public void CreateNode<T>() where T : BTNode
         {
-            if (behaviorTree == null || nodeView?.Node == null || nodeView.Node.Equals(null))
-                return;
-
-            if (!BTNodeEditorService.CanDuplicateNode(nodeView.Node, behaviorTree))
-            {
-                Debug.LogWarning("Cannot duplicate root node!");
-                return;
-            }
-
-            var originalPos = nodeView.GetPosition();
-            var offsetPos = new Rect(originalPos.x + 200, originalPos.y, originalPos.width, originalPos.height);
-            CreateNodeFromTemplate(nodeView.Node, " (Copy)", offsetPos);
+            Create(typeof(T), mousePosition);
         }
 
-        private void DeleteNode(BTNodeView nodeView)
+        public void CreateNode(Type type)
         {
-            if (!BTNodeEditorService.CanDeleteNode(nodeView.Node))
-            {
-                Debug.LogWarning("Cannot delete root node!");
-                return;
-            }
-
-            RemoveNodeFromGraph(nodeView.Node, nodeView);
-            BTAssetService.AutoFixBehaviourTree(behaviorTree);
-            BTEditorAssetService.MarkDirty(behaviorTree);
+            Create(type, mousePosition);
         }
 
-        private void RemoveNodeFromGraph(BTNode node, BTNodeView nodeView)
+        public void Create(Type type, Vector2 position)
         {
-            var edgesToRemove = graphElements.OfType<Edge>()
-                .Where(edge => edge.output.node == nodeView || edge.input.node == nodeView)
-                .ToList();
-
-            foreach (var edge in edgesToRemove)
+            if (nodeOperationService != null)
             {
-                RemoveElement(edge);
-            }
-
-            if (node != null)
-            {
-                foreach (var (parentNode, _) in nodeViews)
-                {
-                    if (parentNode == null || parentNode.Equals(null))
-                        continue;
-
-                    BTNodeEditorService.RemoveChild(parentNode, node);
-                }
-            }
-
-            RemoveElement(nodeView);
-            nodeViews.Remove(node);
-
-            try
-            {
-                Object.DestroyImmediate(node, true);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"Failed to destroy node: {ex.Message}");
+                nodeOperationService.CreateNode(type, position, CreateViewForNode);
             }
         }
 
-        private void PasteNode()
+
+        public void DuplicateNode(BTNodeView nodeView)
         {
-            if (copiedNode == null || behaviorTree == null)
-                return;
-
-            if (copiedNode.Equals(null))
+            if (nodeOperationService != null)
             {
-                Debug.LogWarning("Copied node has been destroyed.");
-                copiedNode = null;
-                return;
-            }
-
-            if (!BTNodeEditorService.CanCopyNode(copiedNode, behaviorTree))
-            {
-                Debug.LogWarning("Cannot paste root node!");
-                copiedNode = null;
-                return;
-            }
-
-            CreateNodeFromTemplate(copiedNode, " (Paste)", new Rect(mousePosition, Vector2.zero));
-        }
-
-        private void CreateNodeFromTemplate(BTNode templateNode, string nameSuffix, Rect position)
-        {
-            try
-            {
-                var newNode = Object.Instantiate(templateNode);
-                newNode.name = templateNode.name + nameSuffix;
-
-                foreach (var child in BTNodeEditorService.GetChildren(newNode).ToList())
-                {
-                    BTNodeEditorService.RemoveChild(newNode, child);
-                }
-
-                AssetDatabase.AddObjectToAsset(newNode, behaviorTree);
-                BTEditorAssetService.MarkDirty(behaviorTree);
-
-                var nodeView = CreateNodeViewFromNode(newNode);
-                if (nodeView != null)
-                {
-                    nodeView.SetPosition(position);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"Failed to create node from template: {ex.Message}");
+                nodeOperationService.DuplicateNode(nodeView, new Vector2(200, 0), CreateViewForNode);
             }
         }
 
-        /// <summary>
-        /// 自动生成节点创建菜单
-        /// </summary>
-        /// <param name="evt"> 上下文菜单广播事件 </param>
-        private void BuildNodeCreationMenu(ContextualMenuPopulateEvent evt)
+        public void DeleteNode(BTNodeView nodeView)
         {
-            var nodeTypes = BTNodeTypeHelper.GetAllNodeTypes();
-
-            foreach (var (category, types) in nodeTypes)
+            if (nodeOperationService != null)
             {
-                foreach (var type in types)
-                {
-                    var displayName = BTNodeTypeHelper.GetNodeDisplayName(type);
-                    var menuPath = $"Create Node/{category}/{displayName}";
-
-                    evt.menu.AppendAction(menuPath, _ => CreateNode(type), DropdownMenuAction.AlwaysEnabled);
-                }
+                nodeOperationService.DeleteNode(nodeView);
             }
         }
 
-        #endregion
 
-        #region Blackboard Methods
+        public void PasteNode()
+        {
+            if (nodeOperationService != null && copiedNode != null)
+            {
+                nodeOperationService.PasteNode(copiedNode, mousePosition, CreateViewForNode);
+            }
+        }
+
+        public bool HasCopiedNode()
+        {
+            return copiedNode != null && !copiedNode.Equals(null);
+        }
 
         public void AddBlackboardVariable(string varName, Type varType)
         {
-            if (behaviorTree?.Blackboard == null)
-                return;
-
-            // 添加到Runtime Blackboard
-            var defaultValue = GetDefaultValue(varType);
-            behaviorTree.Blackboard.AddVariable(varName, varType, defaultValue);
-
-            RefreshBlackboardView();
-            BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
+            blackboardManager?.AddVariable(varName, varType);
         }
-
 
         public void RefreshBlackboardView()
         {
-            var blackboard = this.Q<Blackboard>();
-            if (blackboard == null || behaviorTree?.Blackboard == null) return;
-
-            blackboard.Clear();
-
-            foreach (var varInfo in behaviorTree.Blackboard.GetVariableInfos())
-            {
-                if (!varInfo.isExposed) continue;
-
-                var variableRow = CreateVariableRow(varInfo.name, Type.GetType(varInfo.typeName));
-                blackboard.Add(variableRow);
-            }
-        }
-
-        private VisualElement CreateVariableRow(string varName, Type varType)
-        {
-            var row = new VisualElement();
-            row.AddToClassList("blackboard-variable-row");
-
-            // 变量信息行
-            var infoRow = new VisualElement();
-            infoRow.AddToClassList("blackboard-variable-info");
-
-            var nameField = new TextField
-            {
-                value = varName
-            };
-            nameField.AddToClassList("blackboard-variable-name");
-            nameField.RegisterCallback<FocusOutEvent>(evt =>
-            {
-                // 仅在失去焦点时修改黑板变量的名称
-                if (evt.target is TextField textField)
-                    RenameBlackboardVariable(varName, textField.value);
-            });
-
-            var typeLabel = new Label(GetTypeDisplayName(varType));
-            typeLabel.AddToClassList("blackboard-variable-type");
-
-            var deleteButton = new Button(() => RemoveBlackboardVariable(varName))
-            {
-                text = "×"
-            };
-            deleteButton.AddToClassList("blackboard-delete-button");
-
-            infoRow.Add(nameField);
-            infoRow.Add(typeLabel);
-            infoRow.Add(deleteButton);
-
-            // 值编辑行
-            var valueRow = new VisualElement();
-            valueRow.AddToClassList("blackboard-variable-value");
-
-            var valueEditor = CreateValueEditor(varName, varType);
-            if (valueEditor != null)
-            {
-                valueEditor.AddToClassList("blackboard-value-editor");
-                valueRow.Add(valueEditor);
-            }
-
-            row.Add(infoRow);
-            row.Add(valueRow);
-
-            return row;
-        }
-
-        private VisualElement CreateValueEditor(string varName, Type varType)
-        {
-            var callback = CreateBlackboardValueChangeCallback(varName);
-
-            if (varType == typeof(bool))
-            {
-                var toggle = new Toggle { value = behaviorTree.Blackboard.GetBool(varName) };
-                toggle.RegisterValueChangedCallback(evt =>
-                {
-                    behaviorTree.Blackboard.SetBool(varName, evt.newValue);
-                    callback();
-                });
-                return toggle;
-            }
-
-            if (varType == typeof(float))
-            {
-                var floatField = new FloatField { value = behaviorTree.Blackboard.GetFloat(varName) };
-                floatField.RegisterValueChangedCallback(evt =>
-                {
-                    behaviorTree.Blackboard.SetFloat(varName, evt.newValue);
-                    callback();
-                });
-                return floatField;
-            }
-
-            if (varType == typeof(string))
-            {
-                var textField = new TextField { value = behaviorTree.Blackboard.GetString(varName) };
-                textField.RegisterValueChangedCallback(evt =>
-                {
-                    behaviorTree.Blackboard.SetString(varName, evt.newValue);
-                    callback();
-                });
-                return textField;
-            }
-
-            if (varType == typeof(Vector3))
-            {
-                var vector3Field = new Vector3Field { value = behaviorTree.Blackboard.GetVector3(varName) };
-                vector3Field.RegisterValueChangedCallback(evt =>
-                {
-                    behaviorTree.Blackboard.SetVector3(varName, evt.newValue);
-                    callback();
-                });
-                return vector3Field;
-            }
-
-            if (varType == typeof(GameObject))
-            {
-                var objectField = new ObjectField
-                {
-                    objectType = typeof(GameObject),
-                    value = behaviorTree.Blackboard.GetGameObject(varName)
-                };
-                objectField.RegisterValueChangedCallback(evt =>
-                {
-                    behaviorTree.Blackboard.SetGameObject(varName, evt.newValue as GameObject);
-                    callback();
-                });
-                return objectField;
-            }
-
-            return null;
-        }
-
-        private System.Action CreateBlackboardValueChangeCallback(string varName)
-        {
-            return () => BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
+            blackboardManager?.RefreshView();
         }
 
         public void RemoveBlackboardVariable(string varName)
         {
-            if (behaviorTree?.Blackboard == null) return;
-
-            behaviorTree.Blackboard.RemoveVariable(varName);
-            RefreshBlackboardView();
-            BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
+            blackboardManager?.RemoveVariable(varName);
         }
 
         public void RenameBlackboardVariable(string oldName, string newName)
         {
-            if (behaviorTree?.Blackboard == null)
-                return;
-
-            if (string.IsNullOrEmpty(newName) || oldName == newName)
-                return;
-
-            // 检查新名称是否已存在
-            if (behaviorTree.Blackboard.HasKey(newName))
-            {
-                Debug.LogWarning($"Variable '{newName}' already exists!");
-                RefreshBlackboardView(); // 刷新以恢复原始名称
-                return;
-            }
-
-            behaviorTree.Blackboard.RenameVariable(oldName, newName);
-            RefreshBlackboardView();
-            BTEditorAssetService.MarkDirty(behaviorTree.Blackboard);
+            blackboardManager?.RenameVariable(oldName, newName);
         }
-
-        private static readonly Dictionary<Type, (object defaultValue, string displayName)> TypeInfo =
-            new Dictionary<Type, (object, string)>
-            {
-                { typeof(bool), (false, "bool") },
-                { typeof(float), (0f, "float") },
-                { typeof(Vector3), (Vector3.zero, "Vector3") },
-                { typeof(GameObject), (null, "GameObject") },
-                { typeof(string), ("", "string") }
-            };
-
-        private static object GetDefaultValue(Type type) =>
-            TypeInfo.TryGetValue(type, out var info) ? info.defaultValue : null;
-
-        private static string GetTypeDisplayName(Type type) =>
-            TypeInfo.TryGetValue(type, out var info) ? info.displayName : type.Name;
-
-        #endregion
-
-        #region Inspector Methods
 
         public override void AddToSelection(ISelectable selectable)
         {
@@ -915,7 +493,5 @@ namespace MonsterBT.Editor
                 nodeView.RefreshContent(propertyName);
             }
         }
-
-        #endregion
     }
 }

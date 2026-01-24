@@ -427,7 +427,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb7d3e86b51c0d6e4b8ee021a70c7c27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.BehaviorTreeRunner
-  behaviorTreeAsset: {fileID: 11400000, guid: 6901417d4575567bd84a2dbc8c0960d0, type: 2}
+  behaviorTreeAsset: {fileID: 11400000, guid: f83d8a702f1c1bc4f836258944a71c82, type: 2}
   runOnStart: 1
   loop: 1
   debugMode: 0

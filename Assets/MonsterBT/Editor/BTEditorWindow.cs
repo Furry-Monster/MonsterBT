@@ -10,7 +10,7 @@ namespace MonsterBT.Editor
     public class BTEditorWindow : EditorWindow
     {
         private BTNodeGraphView graphView;
-        private BTPropInspector inspector;
+        private BTNodeInspector inspector;
         private BTNodeLibrary nodeLibrary;
         private BTToolbar toolbar;
         private BTStatusBar statusBar;
@@ -137,7 +137,7 @@ namespace MonsterBT.Editor
             inspectorTitle.AddToClassList("sidebar-title");
             panel.Add(inspectorTitle);
 
-            inspector = new BTPropInspector();
+            inspector = new BTNodeInspector();
             panel.Add(inspector);
 
             parent.Add(panel);

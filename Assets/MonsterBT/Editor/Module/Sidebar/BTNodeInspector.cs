@@ -8,13 +8,13 @@ using UnityEngine.UIElements;
 
 namespace MonsterBT.Editor
 {
-    public class BTPropInspector : VisualElement
+    public class BTNodeInspector : VisualElement
     {
         private BTNode currentNode;
         private readonly ScrollView contentScrollView;
         private readonly Label emptyStateLabel;
 
-        public BTPropInspector()
+        public BTNodeInspector()
         {
             var styleSheet = BTEditorResources.LoadStyleSheet("BTPropInspectorStyle.uss");
             if (styleSheet != null) styleSheets.Add(styleSheet);
@@ -31,8 +31,6 @@ namespace MonsterBT.Editor
             Add(emptyStateLabel);
         }
 
-        #region Public Methods
-
         public void SetSelectedNode(BTNode node)
         {
             if (currentNode == node) return;
@@ -47,10 +45,6 @@ namespace MonsterBT.Editor
             RefreshInspector();
         }
 
-        #endregion
-
-        #region Content Management
-
         private void RefreshInspector()
         {
             contentScrollView.Clear();
@@ -62,14 +56,14 @@ namespace MonsterBT.Editor
             }
 
             emptyStateLabel.style.display = DisplayStyle.None;
-            BuildGeneralProps(currentNode);
+            BuildNodeProperties(currentNode);
         }
 
-        private void BuildGeneralProps(BTNode node)
+        private void BuildNodeProperties(BTNode node)
         {
             var nameField = new TextField("Name") { value = node.name };
             nameField.AddToClassList("inspector-field");
-            nameField.RegisterValueChangedCallback(CreateNodePropertyChangeCallback(node, "name", "Change Node Name",
+            nameField.RegisterValueChangedCallback(CreatePropertyChangeCallback(node, "name", "Change Node Name",
                 (n, v) => n.name = v));
             contentScrollView.Add(nameField);
 
@@ -79,14 +73,14 @@ namespace MonsterBT.Editor
                 multiline = true
             };
             descriptionField.AddToClassList("description-field");
-            descriptionField.RegisterValueChangedCallback(CreateNodePropertyChangeCallback(node, "description",
+            descriptionField.RegisterValueChangedCallback(CreatePropertyChangeCallback(node, "description",
                 "Change Node Description", (n, v) => n.Description = v));
             contentScrollView.Add(descriptionField);
 
-            BuildCustomProps(node);
+            BuildCustomFields(node);
         }
 
-        private EventCallback<ChangeEvent<string>> CreateNodePropertyChangeCallback(
+        private EventCallback<ChangeEvent<string>> CreatePropertyChangeCallback(
             BTNode node, string propertyName, string undoMessage, System.Action<BTNode, string> setter)
         {
             return evt =>
@@ -98,13 +92,12 @@ namespace MonsterBT.Editor
             };
         }
 
-        private void BuildCustomProps(BTNode node)
+        private void BuildCustomFields(BTNode node)
         {
             var fields = GetEditableFields(node);
             if (fields.Length == 0)
                 return;
 
-            // 添加分隔符
             var separator = new VisualElement();
             separator.AddToClassList("field-separator");
             contentScrollView.Add(separator);
@@ -120,29 +113,15 @@ namespace MonsterBT.Editor
             }
         }
 
-        #endregion
-
-        #region Field Editors
-
-        /// <summary>
-        /// 遵从Unity设计，仅仅考虑非静态的Public字段和[SerializedField]标记的字段
-        /// </summary>
-        /// <param name="node">需要被解析的节点实例</param>
-        /// <returns>字段反射表</returns>
         private FieldInfo[] GetEditableFields(BTNode node)
         {
             return node.GetType()
                 .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                .Where(f => f.IsPublic || f.GetCustomAttribute<SerializeField>() != null) // 遵从Unity的设计
+                .Where(f => f.IsPublic || f.GetCustomAttribute<SerializeField>() != null)
                 .Where(f => !IsIgnoredField(f))
                 .ToArray();
         }
 
-        /// <summary>
-        /// 是否为默认会被忽视的序列化的字段
-        /// </summary>
-        /// <param name="field">需要被检测的反射字段</param>
-        /// <returns>true / false</returns>
         private bool IsIgnoredField(FieldInfo field)
         {
             string[] ignoredFields = { "name", "hideFlags", "description", "position" };
@@ -150,12 +129,6 @@ namespace MonsterBT.Editor
                    field.Name.StartsWith("m_");
         }
 
-        /// <summary>
-        /// 为节点node的指定field字段(通过反射),创建Inspector视图(VisualElement类型)
-        /// </summary>
-        /// <param name="field">需要被展示的字段反射表</param>
-        /// <param name="node">字段所属的节点实例，该实例将被解析</param>
-        /// <returns>创建的视图元素</returns>
         private VisualElement CreateFieldEditor(FieldInfo field, BTNode node)
         {
             var fieldType = field.FieldType;
@@ -182,7 +155,5 @@ namespace MonsterBT.Editor
 
             return null;
         }
-
-        #endregion
     }
 }

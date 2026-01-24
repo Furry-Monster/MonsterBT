@@ -6,14 +6,17 @@ namespace MonsterBT.Editor.Services
 {
     public static class BTEditorEventBus
     {
-        #region Toolbar Events
-
         public static event Action<BehaviorTree> OnBehaviorTreeChanged;
         public static event Action OnCreateNewRequested;
         public static event Action OnSaveRequested;
         public static event Action OnAutoLayoutRequested;
         public static event Action OnPlayToggleRequested;
         public static event Action OnDebugToggleRequested;
+        public static event Action<BTNode> OnNodeSelected;
+        public static event Action OnNodeDeselected;
+        public static event Action<Type> OnNodeRequested;
+        public static event Action<BTNode, string> OnPropertyChanged;
+        public static event Action<string, LogType> OnLogMessage;
 
         public static void PublishBehaviorTreeChanged(BehaviorTree tree)
         {
@@ -45,13 +48,6 @@ namespace MonsterBT.Editor.Services
             OnDebugToggleRequested?.Invoke();
         }
 
-        #endregion
-
-        #region Graph View Events
-
-        public static event Action<BTNode> OnNodeSelected;
-        public static event Action OnNodeDeselected;
-
         public static void PublishNodeSelected(BTNode node)
         {
             OnNodeSelected?.Invoke(node);
@@ -62,42 +58,20 @@ namespace MonsterBT.Editor.Services
             OnNodeDeselected?.Invoke();
         }
 
-        #endregion
-
-        #region Node Library Events
-
-        public static event Action<Type> OnNodeRequested;
-
         public static void PublishNodeRequested(Type nodeType)
         {
             OnNodeRequested?.Invoke(nodeType);
         }
-
-        #endregion
-
-        #region Inspector Events
-
-        public static event Action<BTNode, string> OnPropertyChanged;
 
         public static void PublishPropertyChanged(BTNode node, string propertyName)
         {
             OnPropertyChanged?.Invoke(node, propertyName);
         }
 
-        #endregion
-
-        #region Log Events
-
-        public static event Action<string, LogType> OnLogMessage;
-
         public static void PublishLogMessage(string message, LogType logType)
         {
             OnLogMessage?.Invoke(message, logType);
         }
-
-        #endregion
-
-        #region Cleanup
 
         public static void ClearAll()
         {
@@ -113,7 +87,5 @@ namespace MonsterBT.Editor.Services
             OnPropertyChanged = null;
             OnLogMessage = null;
         }
-
-        #endregion
     }
 }

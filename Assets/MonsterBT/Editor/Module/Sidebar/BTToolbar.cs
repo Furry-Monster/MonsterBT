@@ -56,8 +56,6 @@ namespace MonsterBT.Editor
             Add(toolbar);
         }
 
-        #region Public Methods
-
         public void SetBehaviorTree(BehaviorTree behaviorTree)
         {
             currentBehaviorTree = behaviorTree;
@@ -120,8 +118,6 @@ namespace MonsterBT.Editor
             // TODO:实现调试模式切换
             Debug.Log("切换调试模式");
         }
-
-        #endregion
 
         private void OnBehaviorTreeFieldChanged(ChangeEvent<Object> changeEvent)
         {

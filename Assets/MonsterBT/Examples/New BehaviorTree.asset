@@ -42,7 +42,7 @@ MonoBehaviour:
   description: 
   position: {x: 629.6, y: 112.8}
   children:
-  - {fileID: 6809713183864359431}
+  - {fileID: 6267684555653018557}
   finishMode: 0
   successCount: 1
   failureCount: 1
@@ -61,7 +61,7 @@ MonoBehaviour:
   description: 
   position: {x: 393.00403, y: 112.8}
   child: {fileID: 5494766150957365830}
---- !u!114 &6809713183864359431
+--- !u!114 &6267684555653018557
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -70,11 +70,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ff6d4134355602cc39ce7a2890970f04, type: 3}
-  m_Name: MoveToTargetAction
-  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Actions.MoveToTargetAction
+  m_Script: {fileID: 11500000, guid: 79c3957fec07d346d91b5436e50e79d7, type: 3}
+  m_Name: DebugLogAction
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Actions.DebugLogAction
   description: 
-  position: {x: 904.4207, y: 112.8}
-  targetKey: Target
-  speed: 5
-  stoppingDistance: 0.1
+  position: {x: 879.9999, y: 126.40001}
+  message: True Log
+  logType: 3

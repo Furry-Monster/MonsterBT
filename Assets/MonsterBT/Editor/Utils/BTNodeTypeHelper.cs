@@ -22,7 +22,7 @@ namespace MonsterBT.Editor
 
             foreach (var type in allTypes)
             {
-                var category = DetermineNodeCategory(type);
+                var category = GetNodeCategory(type);
                 var subCategory = GetNodeSubCategory(type);
 
                 var finalCategory = category;
@@ -47,7 +47,7 @@ namespace MonsterBT.Editor
             return nodeTypes;
         }
 
-        public static string DetermineNodeCategory(Type type)
+        public static string GetNodeCategory(Type type)
         {
             if (typeof(CompositeNode).IsAssignableFrom(type))
                 return "Composite";
