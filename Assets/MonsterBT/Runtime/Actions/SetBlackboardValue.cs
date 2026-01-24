@@ -9,8 +9,11 @@ namespace MonsterBT.Runtime.Actions
     [CreateAssetMenu(fileName = "SetBlackboardValue", menuName = "MonsterBTNode/Actions/SetBlackboardValue")]
     public class SetBlackboardValue : ActionNode
     {
-        [SerializeField][Tooltip("黑板值对应的键，必须预先已设定")] private string key;
-        [SerializeField][Tooltip("需要改变的黑板值类型")] private ValueType valueType = ValueType.String;
+        [SerializeField] [Tooltip("黑板值对应的键，必须预先已设定")]
+        private string key;
+
+        [SerializeField] [Tooltip("需要改变的黑板值类型")]
+        private ValueType valueType = ValueType.String;
 
         [SerializeField] private string stringValue;
         [SerializeField] private float floatValue;

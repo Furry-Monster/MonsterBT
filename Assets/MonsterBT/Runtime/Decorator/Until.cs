@@ -9,8 +9,7 @@ namespace MonsterBT.Runtime.Decorator
     [CreateAssetMenu(fileName = "Until", menuName = "MonsterBTNode/Decorator/Until")]
     public class Until : DecoratorNode
     {
-        [SerializeField]
-        [Tooltip("重复执行直到子节点返回此状态")]
+        [SerializeField] [Tooltip("重复执行直到子节点返回此状态")]
         private BTNodeState endState = BTNodeState.Success;
 
         protected override BTNodeState OnUpdate()

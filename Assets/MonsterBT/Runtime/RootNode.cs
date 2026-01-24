@@ -24,11 +24,12 @@ namespace MonsterBT.Runtime
 
         public override BTNode Clone()
         {
-            RootNode node = Instantiate(this);
+            var node = Instantiate(this);
             if (child != null)
             {
                 node.child = child.Clone();
             }
+
             return node;
         }
 

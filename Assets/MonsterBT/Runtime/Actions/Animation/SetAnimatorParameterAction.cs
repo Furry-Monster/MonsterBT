@@ -6,14 +6,14 @@ namespace MonsterBT.Runtime.Actions.Animation
     /// <summary>
     /// 设置 Animator 参数节点：设置 Animator 控制器的参数值
     /// </summary>
-    [CreateAssetMenu(fileName = "SetAnimatorParameterAction", menuName = "MonsterBTNode/Actions/Animation/SetAnimatorParameterAction")]
+    [CreateAssetMenu(fileName = "SetAnimatorParameterAction",
+        menuName = "MonsterBTNode/Actions/Animation/SetAnimatorParameterAction")]
     public class SetAnimatorParameterAction : ActionNode
     {
-        [SerializeField][Tooltip("参数名称")] private string parameterName = "Speed";
-        [SerializeField][Tooltip("参数类型")] private ParameterType parameterType = ParameterType.Float;
-        
-        [Header("参数值")]
-        [SerializeField] private bool boolValue = true;
+        [SerializeField] [Tooltip("参数名称")] private string parameterName = "Speed";
+        [SerializeField] [Tooltip("参数类型")] private ParameterType parameterType = ParameterType.Float;
+
+        [Header("参数值")] [SerializeField] private bool boolValue = true;
         [SerializeField] private int intValue = 0;
         [SerializeField] private float floatValue = 0f;
 

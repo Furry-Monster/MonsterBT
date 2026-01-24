@@ -27,21 +27,21 @@ namespace MonsterBT.Editor.View
             window.titleContent = new GUIContent("Monster BehaviorTree");
             window.minSize = new Vector2(800, 600);
         }
-        
+
         [OnOpenAsset(0)]
         public static bool OnOpenAsset(int instanceID, int line)
         {
 #if UNITY_2023_1_OR_NEWER
             var obj = EditorUtility.EntityIdToObject(instanceID);
 #else
-            var obj =  EditorUtility.InstanceIDToObject(instanceID);
+            var obj = EditorUtility.InstanceIDToObject(instanceID);
 #endif
             if (obj is BehaviorTree behaviorTree)
             {
                 OpenBehaviorTree(behaviorTree);
                 return true;
             }
-            
+
             return false;
         }
 

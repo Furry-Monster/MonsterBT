@@ -6,14 +6,23 @@ namespace MonsterBT.Runtime.Actions.Navigation
     /// <summary>
     /// 使用 NavMesh 移动到目标节点
     /// </summary>
-    [CreateAssetMenu(fileName = "MoveToTargetNavMeshAction", menuName = "MonsterBTNode/Actions/Navigation/MoveToTargetNavMeshAction")]
+    [CreateAssetMenu(fileName = "MoveToTargetNavMeshAction",
+        menuName = "MonsterBTNode/Actions/Navigation/MoveToTargetNavMeshAction")]
     public class MoveToTargetNavMeshAction : ActionNode
     {
-        [SerializeField][Tooltip("目标 GameObject 的黑板键名")] private string targetKey = "Target";
-        [SerializeField][Tooltip("移动速度（如果为0则使用 NavMeshAgent 的默认速度）")] private float speed = 0f;
-        [SerializeField][Tooltip("停止距离")] private float stoppingDistance = 0.5f;
-        [SerializeField][Tooltip("路径计算超时时间（秒）")] private float pathTimeout = 1f;
-        [SerializeField][Tooltip("目标更新间隔（秒），用于动态目标")] private float targetUpdateInterval = 0.5f;
+        [SerializeField] [Tooltip("目标 GameObject 的黑板键名")]
+        private string targetKey = "Target";
+
+        [SerializeField] [Tooltip("移动速度（如果为0则使用 NavMeshAgent 的默认速度）")]
+        private float speed = 0f;
+
+        [SerializeField] [Tooltip("停止距离")] private float stoppingDistance = 0.5f;
+
+        [SerializeField] [Tooltip("路径计算超时时间（秒）")]
+        private float pathTimeout = 1f;
+
+        [SerializeField] [Tooltip("目标更新间隔（秒），用于动态目标")]
+        private float targetUpdateInterval = 0.5f;
 
         private NavMeshAgent navMeshAgent;
         private Transform targetTransform;
@@ -47,7 +56,8 @@ namespace MonsterBT.Runtime.Actions.Navigation
             var targetObject = blackboard.GetGameObject(targetKey);
             if (targetObject == null)
             {
-                Debug.LogError($"[MoveToTargetNavMeshAction] Target GameObject key '{targetKey}' not found in blackboard");
+                Debug.LogError(
+                    $"[MoveToTargetNavMeshAction] Target GameObject key '{targetKey}' not found in blackboard");
                 return;
             }
 
@@ -60,13 +70,14 @@ namespace MonsterBT.Runtime.Actions.Navigation
             }
 
             navMeshAgent.stoppingDistance = stoppingDistance;
-            
+
             // 确保 NavMeshAgent 可以更新位置和旋转
             if (!navMeshAgent.updatePosition)
             {
                 Debug.LogWarning("[MoveToTargetNavMeshAction] NavMeshAgent.updatePosition is false, enabling it");
                 navMeshAgent.updatePosition = true;
             }
+
             if (!navMeshAgent.updateRotation)
             {
                 Debug.LogWarning("[MoveToTargetNavMeshAction] NavMeshAgent.updateRotation is false, enabling it");
@@ -82,13 +93,15 @@ namespace MonsterBT.Runtime.Actions.Navigation
             if (NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 5f, NavMesh.AllAreas))
             {
                 navMeshAgent.SetDestination(hit.position);
-                Debug.Log($"[MoveToTargetNavMeshAction] Started moving to target: {targetObject.name} at {hit.position}, " +
-                         $"Agent position: {navMeshAgent.transform.position}, Speed: {navMeshAgent.speed}, " +
-                         $"Stopping distance: {stoppingDistance}");
+                Debug.Log(
+                    $"[MoveToTargetNavMeshAction] Started moving to target: {targetObject.name} at {hit.position}, " +
+                    $"Agent position: {navMeshAgent.transform.position}, Speed: {navMeshAgent.speed}, " +
+                    $"Stopping distance: {stoppingDistance}");
             }
             else
             {
-                Debug.LogWarning($"[MoveToTargetNavMeshAction] Target position {targetPosition} is not on NavMesh (within 5 units)");
+                Debug.LogWarning(
+                    $"[MoveToTargetNavMeshAction] Target position {targetPosition} is not on NavMesh (within 5 units)");
             }
         }
 
@@ -117,7 +130,8 @@ namespace MonsterBT.Runtime.Actions.Navigation
             {
                 if (Time.time - pathCalculationStartTime > pathTimeout)
                 {
-                    Debug.LogWarning($"[MoveToTargetNavMeshAction] Path calculation timeout. Status: {navMeshAgent.pathStatus}, Pending: {navMeshAgent.pathPending}");
+                    Debug.LogWarning(
+                        $"[MoveToTargetNavMeshAction] Path calculation timeout. Status: {navMeshAgent.pathStatus}, Pending: {navMeshAgent.pathPending}");
                     return BTNodeState.Failure;
                 }
 
@@ -128,12 +142,14 @@ namespace MonsterBT.Runtime.Actions.Navigation
 
                 if (navMeshAgent.pathStatus == NavMeshPathStatus.PathInvalid)
                 {
-                    Debug.LogWarning($"[MoveToTargetNavMeshAction] Invalid path to target. Target: {targetTransform.position}, Agent: {navMeshAgent.transform.position}");
+                    Debug.LogWarning(
+                        $"[MoveToTargetNavMeshAction] Invalid path to target. Target: {targetTransform.position}, Agent: {navMeshAgent.transform.position}");
                     return BTNodeState.Failure;
                 }
 
                 pathCalculated = true;
-                Debug.Log($"[MoveToTargetNavMeshAction] Path calculated. Distance: {navMeshAgent.remainingDistance}, Status: {navMeshAgent.pathStatus}");
+                Debug.Log(
+                    $"[MoveToTargetNavMeshAction] Path calculated. Distance: {navMeshAgent.remainingDistance}, Status: {navMeshAgent.pathStatus}");
             }
 
             // 更新目标位置（用于动态目标）
@@ -148,6 +164,7 @@ namespace MonsterBT.Runtime.Actions.Navigation
                 {
                     Debug.LogWarning($"[MoveToTargetNavMeshAction] Cannot sample target position: {targetPosition}");
                 }
+
                 lastTargetUpdateTime = Time.time;
             }
 
@@ -156,7 +173,7 @@ namespace MonsterBT.Runtime.Actions.Navigation
             {
                 // remainingDistance 可能是 Infinity（当路径刚计算完成时）或有效距离
                 float remainingDistance = navMeshAgent.remainingDistance;
-                
+
                 // 如果距离是 Infinity，检查是否有有效路径
                 if (float.IsInfinity(remainingDistance))
                 {
@@ -164,15 +181,18 @@ namespace MonsterBT.Runtime.Actions.Navigation
                     // 或者目标已经在停止距离内，直接检查实际距离
                     if (navMeshAgent.pathStatus == NavMeshPathStatus.PathComplete)
                     {
-                        float actualDistance = Vector3.Distance(navMeshAgent.transform.position, targetTransform.position);
+                        float actualDistance =
+                            Vector3.Distance(navMeshAgent.transform.position, targetTransform.position);
                         if (actualDistance <= stoppingDistance)
                         {
                             Debug.Log($"[MoveToTargetNavMeshAction] Reached target. Actual distance: {actualDistance}");
                             return BTNodeState.Success;
                         }
+
                         // 如果实际距离大于停止距离，但路径距离是 Infinity，继续等待 Agent 开始移动
                         return BTNodeState.Running;
                     }
+
                     // 如果路径状态不是完整的，继续等待
                     return BTNodeState.Running;
                 }
@@ -190,9 +210,10 @@ namespace MonsterBT.Runtime.Actions.Navigation
                     // 只有在路径计算完成一段时间后仍未移动才警告
                     if (Time.time - pathCalculationStartTime > 0.5f)
                     {
-                        Debug.LogWarning($"[MoveToTargetNavMeshAction] Agent not moving. Velocity: {navMeshAgent.velocity.magnitude}, " +
-                                       $"Distance: {remainingDistance}, Status: {navMeshAgent.pathStatus}, " +
-                                       $"HasPath: {navMeshAgent.hasPath}");
+                        Debug.LogWarning(
+                            $"[MoveToTargetNavMeshAction] Agent not moving. Velocity: {navMeshAgent.velocity.magnitude}, " +
+                            $"Distance: {remainingDistance}, Status: {navMeshAgent.pathStatus}, " +
+                            $"HasPath: {navMeshAgent.hasPath}");
                     }
                 }
             }

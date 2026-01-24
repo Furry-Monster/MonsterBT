@@ -21,11 +21,10 @@ namespace MonsterBT.Runtime.Conditions
     {
         [SerializeField] private string keyName = "vector3Key";
         [SerializeField] private Vector3Comparison comparisonType = Vector3Comparison.DistanceTo;
-        
-        [Header("比较值")]
-        [SerializeField] private Vector3 expectedVector = Vector3.zero;
+
+        [Header("比较值")] [SerializeField] private Vector3 expectedVector = Vector3.zero;
         [SerializeField] private float expectedFloat = 0f;
-        [SerializeField][Tooltip("浮点数容差")] private float tolerance = 0.1f;
+        [SerializeField] [Tooltip("浮点数容差")] private float tolerance = 0.1f;
 
         protected override BTNodeState OnUpdate()
         {

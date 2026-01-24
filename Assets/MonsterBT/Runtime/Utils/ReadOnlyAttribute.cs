@@ -5,7 +5,6 @@ namespace MonsterBT.Runtime.Utils
 {
     public class ReadOnlyAttribute : PropertyAttribute
     {
-
     }
 
 #if UNITY_EDITOR

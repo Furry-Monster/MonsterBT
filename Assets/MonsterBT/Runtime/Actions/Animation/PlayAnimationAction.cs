@@ -5,13 +5,14 @@ namespace MonsterBT.Runtime.Actions.Animation
     /// <summary>
     /// 播放动画节点：播放指定的动画状态
     /// </summary>
-    [CreateAssetMenu(fileName = "PlayAnimationAction", menuName = "MonsterBTNode/Actions/Animation/PlayAnimationAction")]
+    [CreateAssetMenu(fileName = "PlayAnimationAction",
+        menuName = "MonsterBTNode/Actions/Animation/PlayAnimationAction")]
     public class PlayAnimationAction : ActionNode
     {
-        [SerializeField][Tooltip("动画状态名称")] private string animationStateName = "Idle";
-        [SerializeField][Tooltip("动画层索引")] private int layerIndex = 0;
-        [SerializeField][Tooltip("是否等待动画完成")] private bool waitForCompletion = false;
-        [SerializeField][Tooltip("动画过渡时间")] private float transitionDuration = 0.25f;
+        [SerializeField] [Tooltip("动画状态名称")] private string animationStateName = "Idle";
+        [SerializeField] [Tooltip("动画层索引")] private int layerIndex = 0;
+        [SerializeField] [Tooltip("是否等待动画完成")] private bool waitForCompletion = false;
+        [SerializeField] [Tooltip("动画过渡时间")] private float transitionDuration = 0.25f;
 
         private Animator animator;
         private bool animationStarted;
@@ -47,7 +48,8 @@ namespace MonsterBT.Runtime.Actions.Animation
             {
                 if (!animator.HasState(layerIndex, animationStateHash))
                 {
-                    Debug.LogWarning($"[PlayAnimationAction] Animation state '{animationStateName}' not found in Animator");
+                    Debug.LogWarning(
+                        $"[PlayAnimationAction] Animation state '{animationStateName}' not found in Animator");
                     return BTNodeState.Failure;
                 }
 

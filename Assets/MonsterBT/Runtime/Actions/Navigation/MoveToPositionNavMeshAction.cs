@@ -6,13 +6,20 @@ namespace MonsterBT.Runtime.Actions.Navigation
     /// <summary>
     /// 使用 NavMesh 移动到指定位置节点
     /// </summary>
-    [CreateAssetMenu(fileName = "MoveToPositionNavMeshAction", menuName = "MonsterBTNode/Actions/Navigation/MoveToPositionNavMeshAction")]
+    [CreateAssetMenu(fileName = "MoveToPositionNavMeshAction",
+        menuName = "MonsterBTNode/Actions/Navigation/MoveToPositionNavMeshAction")]
     public class MoveToPositionNavMeshAction : ActionNode
     {
-        [SerializeField][Tooltip("目标位置（Vector3）的黑板键名")] private string targetPositionKey = "TargetPosition";
-        [SerializeField][Tooltip("移动速度（如果为0则使用 NavMeshAgent 的默认速度）")] private float speed = 0f;
-        [SerializeField][Tooltip("停止距离")] private float stoppingDistance = 0.5f;
-        [SerializeField][Tooltip("路径计算超时时间（秒）")] private float pathTimeout = 1f;
+        [SerializeField] [Tooltip("目标位置（Vector3）的黑板键名")]
+        private string targetPositionKey = "TargetPosition";
+
+        [SerializeField] [Tooltip("移动速度（如果为0则使用 NavMeshAgent 的默认速度）")]
+        private float speed = 0f;
+
+        [SerializeField] [Tooltip("停止距离")] private float stoppingDistance = 0.5f;
+
+        [SerializeField] [Tooltip("路径计算超时时间（秒）")]
+        private float pathTimeout = 1f;
 
         private NavMeshAgent navMeshAgent;
         private Vector3 targetPosition;
@@ -39,7 +46,8 @@ namespace MonsterBT.Runtime.Actions.Navigation
             targetPosition = blackboard.GetVector3(targetPositionKey);
             if (targetPosition == Vector3.zero && !blackboard.HasKey(targetPositionKey))
             {
-                Debug.LogError($"[MoveToPositionNavMeshAction] Target position key '{targetPositionKey}' not found in blackboard");
+                Debug.LogError(
+                    $"[MoveToPositionNavMeshAction] Target position key '{targetPositionKey}' not found in blackboard");
                 return;
             }
 

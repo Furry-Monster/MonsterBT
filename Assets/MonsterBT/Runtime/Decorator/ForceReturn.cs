@@ -9,7 +9,7 @@ namespace MonsterBT.Runtime.Decorator
     [CreateAssetMenu(fileName = "ForceReturn", menuName = "MonsterBTNode/Decorator/ForceReturn")]
     public class ForceReturn : DecoratorNode
     {
-        [SerializeField][Tooltip("强制返回的状态")] private BTNodeState forceState = BTNodeState.Success;
+        [SerializeField] [Tooltip("强制返回的状态")] private BTNodeState forceState = BTNodeState.Success;
 
         protected override BTNodeState OnUpdate()
         {

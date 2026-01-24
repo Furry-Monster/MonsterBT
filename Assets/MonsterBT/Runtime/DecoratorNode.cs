@@ -28,6 +28,7 @@ namespace MonsterBT.Runtime
             {
                 node.child = child.Clone();
             }
+
             return node;
         }
 

@@ -19,15 +19,16 @@ namespace MonsterBT.Runtime
     public class Blackboard : ScriptableObject
     {
         // 序列化的默认值存储（用于 Editor 中设置的默认值）
-        [SerializeField] private List<SerializablePair<string, bool>> boolValues = new List<SerializablePair<string, bool>>();
-        [SerializeField] private List<SerializablePair<string, float>> floatValues = new List<SerializablePair<string, float>>();
-        [SerializeField] private List<SerializablePair<string, string>> stringValues = new List<SerializablePair<string, string>>();
-        [SerializeField] private List<SerializablePair<string, Vector3>> vector3Values = new List<SerializablePair<string, Vector3>>();
-        [SerializeField] private List<SerializablePair<string, GameObject>> gameObjectValues = new List<SerializablePair<string, GameObject>>();
-        [SerializeField] private List<SerializablePair<string, Transform>> transformValues = new List<SerializablePair<string, Transform>>();
+        [SerializeField] private List<SerializablePair<string, bool>> boolValues = new();
+        [SerializeField] private List<SerializablePair<string, float>> floatValues = new();
+        [SerializeField] private List<SerializablePair<string, string>> stringValues = new();
+        [SerializeField] private List<SerializablePair<string, Vector3>> vector3Values = new();
+        [SerializeField] private List<SerializablePair<string, GameObject>> gameObjectValues = new();
+        [SerializeField] private List<SerializablePair<string, Transform>> transformValues = new();
 
         // 运行时黑板，用于和行为树交互
         private readonly SerializableDictionary<string, object> data = new();
+
         // 黑板变量信息表，用于提供Editor界面信息
         [SerializeField] [ReadOnly] private List<BlackboardVariableInfo> variableInfos = new();
 
@@ -49,22 +50,27 @@ namespace MonsterBT.Runtime
             {
                 data[pair.key] = pair.value;
             }
+
             foreach (var pair in floatValues.Where(pair => !data.ContainsKey(pair.key)))
             {
                 data[pair.key] = pair.value;
             }
+
             foreach (var pair in stringValues.Where(pair => !data.ContainsKey(pair.key)))
             {
                 data[pair.key] = pair.value;
             }
+
             foreach (var pair in vector3Values.Where(pair => !data.ContainsKey(pair.key)))
             {
                 data[pair.key] = pair.value;
             }
+
             foreach (var pair in gameObjectValues.Where(pair => !data.ContainsKey(pair.key)))
             {
                 data[pair.key] = pair.value;
             }
+
             foreach (var pair in transformValues.Where(pair => !data.ContainsKey(pair.key)))
             {
                 data[pair.key] = pair.value;
@@ -101,26 +107,32 @@ namespace MonsterBT.Runtime
             {
                 return (T)(object)LoadFromSerializedList(boolValues, key, false);
             }
+
             if (typeof(T) == typeof(float))
             {
                 return (T)(object)LoadFromSerializedList(floatValues, key, 0f);
             }
+
             if (typeof(T) == typeof(string))
             {
                 return (T)(object)LoadFromSerializedList(stringValues, key, "");
             }
+
             if (typeof(T) == typeof(Vector3))
             {
                 return (T)(object)LoadFromSerializedList(vector3Values, key, Vector3.zero);
             }
+
             if (typeof(T) == typeof(GameObject))
             {
                 return (T)(object)LoadFromSerializedList(gameObjectValues, key, (GameObject)null);
             }
+
             if (typeof(T) == typeof(Transform))
             {
                 return (T)(object)LoadFromSerializedList(transformValues, key, (Transform)null);
             }
+
             return default(T);
         }
 
@@ -131,6 +143,7 @@ namespace MonsterBT.Runtime
                 if (pair.key == key)
                     return pair.value;
             }
+
             return defaultValue;
         }
 
@@ -151,6 +164,7 @@ namespace MonsterBT.Runtime
                 if (pair.key == key)
                     return true;
             }
+
             return false;
         }
 
@@ -198,6 +212,7 @@ namespace MonsterBT.Runtime
                     return;
                 }
             }
+
             list.Add(new SerializablePair<string, T> { key = key, value = value });
         }
 
@@ -412,6 +427,5 @@ namespace MonsterBT.Runtime
         }
 
         #endregion
-
     }
 }

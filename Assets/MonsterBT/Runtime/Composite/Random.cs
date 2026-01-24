@@ -13,7 +13,7 @@ namespace MonsterBT.Runtime.Composite
         [SerializeField] [Tooltip("是否使用权重选择")] private bool isAverage;
 
         [SerializeField] [Tooltip("子节点权重列表（仅在useWeights为true时生效）")]
-        private List<float> weights = new List<float>();
+        private List<float> weights = new();
 
         [SerializeField] [Tooltip("是否每次重新选择（false表示选中后执行完毕才重新选择）")]
         private bool reselectOnComplete = true;
@@ -103,6 +103,7 @@ namespace MonsterBT.Runtime.Composite
                 float weight = index < weights.Count ? weights[index] : 1f;
                 totalWeight += Mathf.Max(weight, 0f); // 确保权重非负
             }
+
             if (totalWeight <= 0f)
             {
                 // 如果总权重为0，回退到简单随机选择
@@ -145,6 +146,5 @@ namespace MonsterBT.Runtime.Composite
             cloned.weights = new List<float>(weights);
             return cloned;
         }
-
     }
 }

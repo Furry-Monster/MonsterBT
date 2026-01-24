@@ -27,20 +27,17 @@ namespace MonsterBT.Runtime.Composite
     [CreateAssetMenu(fileName = "Parallel", menuName = "MonsterBTNode/Composite/Parallel")]
     public class Parallel : CompositeNode
     {
-        [SerializeField]
-        [Tooltip("完成模式：立即完成或等待所有子节点")]
+        [SerializeField] [Tooltip("完成模式：立即完成或等待所有子节点")]
         private ParallelFinishMode finishMode = ParallelFinishMode.Immediate;
 
-        [SerializeField]
-        [Tooltip("成功需要的子节点数量（0表示至少一个）")]
+        [SerializeField] [Tooltip("成功需要的子节点数量（0表示至少一个）")]
         private int successCount = 1;
 
-        [SerializeField]
-        [Tooltip("失败需要的子节点数量（0表示至少一个）")]
+        [SerializeField] [Tooltip("失败需要的子节点数量（0表示至少一个）")]
         private int failureCount = 1;
 
         /// 子节点状态表
-        private readonly Dictionary<BTNode, BTNodeState> childStates = new Dictionary<BTNode, BTNodeState>();
+        private readonly Dictionary<BTNode, BTNodeState> childStates = new();
 
         protected override void OnStart()
         {
@@ -115,11 +112,13 @@ namespace MonsterBT.Runtime.Composite
                         AbortRemainingChildren();
                         return BTNodeState.Success;
                     }
+
                     if (failureNodes >= actualFailureThreshold)
                     {
                         AbortRemainingChildren();
                         return BTNodeState.Failure;
                     }
+
                     return BTNodeState.Running;
 
                 case ParallelFinishMode.Delayed:
@@ -127,11 +126,13 @@ namespace MonsterBT.Runtime.Composite
                     {
                         return BTNodeState.Running;
                     }
+
                     // 所有节点都完成了，判断最终结果
                     if (successNodes >= actualSuccessThreshold)
                     {
                         return BTNodeState.Success;
                     }
+
                     return BTNodeState.Failure;
 
                 default:
@@ -159,6 +160,5 @@ namespace MonsterBT.Runtime.Composite
                 }
             }
         }
-
     }
 }

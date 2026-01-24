@@ -104,7 +104,8 @@ namespace MonsterBT.Editor.Service.Misc
                 {
                     if (textField.value != originalName)
                     {
-                        UnityEditor.Undo.RecordObject(behaviorTree.Blackboard, $"Rename Blackboard Variable: {originalName}");
+                        UnityEditor.Undo.RecordObject(behaviorTree.Blackboard,
+                            $"Rename Blackboard Variable: {originalName}");
                         RenameVariable(originalName, textField.value);
                     }
                 }

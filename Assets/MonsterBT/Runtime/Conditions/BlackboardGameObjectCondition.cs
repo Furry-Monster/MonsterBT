@@ -19,9 +19,8 @@ namespace MonsterBT.Runtime.Conditions
     {
         [SerializeField] private string keyName = "gameObjectKey";
         [SerializeField] private GameObjectComparison comparisonType = GameObjectComparison.IsNotNull;
-        
-        [Header("比较参数")]
-        [SerializeField] private string expectedTag = "Player";
+
+        [Header("比较参数")] [SerializeField] private string expectedTag = "Player";
         [SerializeField] private string componentTypeName = "Rigidbody";
         [SerializeField] private GameObject referenceObject;
 
@@ -69,6 +68,7 @@ namespace MonsterBT.Runtime.Conditions
                             return BTNodeState.Failure;
                         }
                     }
+
                     break;
 
                 case GameObjectComparison.EqualsReference:

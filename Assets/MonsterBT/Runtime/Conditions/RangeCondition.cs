@@ -7,7 +7,9 @@ namespace MonsterBT.Runtime.Conditions
     {
         [SerializeField] private string targetKey = "Target";
         [SerializeField] private float range = 5f;
-        [SerializeField][Tooltip("是否使用平方距离优化性能(存在误差)")] private bool useSquareDistance = true; 
+
+        [SerializeField] [Tooltip("是否使用平方距离优化性能(存在误差)")]
+        private bool useSquareDistance = true;
 
         protected override BTNodeState OnUpdate()
         {

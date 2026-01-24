@@ -28,14 +28,13 @@ namespace MonsterBT.Runtime.Utils
         ICollection<SerializablePair<TKey, TValue>>, ISerializationCallbackReceiver
     {
         // 序列化字典，用于显示在Inspector中
-        [SerializeField]
-        private List<SerializablePair<TKey, TValue>> serializableDict = new List<SerializablePair<TKey, TValue>>();
+        [SerializeField] private List<SerializablePair<TKey, TValue>> serializableDict = new();
 
         // 运行时字典，用于处理数据
         private Dictionary<TKey, TValue> rawDict;
 
         // 线程锁
-        private readonly object syncLock = new object();
+        private readonly object syncLock = new();
 
         public int Count
         {
@@ -215,6 +214,7 @@ namespace MonsterBT.Runtime.Utils
                         SyncToSerializable();
                     return removed;
                 }
+
                 return false;
             }
         }
@@ -276,6 +276,5 @@ namespace MonsterBT.Runtime.Utils
         }
 
         #endregion
-
     }
 }

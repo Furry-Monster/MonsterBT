@@ -5,12 +5,17 @@ namespace MonsterBT.Runtime.Actions.Animation
     /// <summary>
     /// 等待动画完成节点：等待指定的动画状态播放完成
     /// </summary>
-    [CreateAssetMenu(fileName = "WaitForAnimationAction", menuName = "MonsterBTNode/Actions/Animation/WaitForAnimationAction")]
+    [CreateAssetMenu(fileName = "WaitForAnimationAction",
+        menuName = "MonsterBTNode/Actions/Animation/WaitForAnimationAction")]
     public class WaitForAnimationAction : ActionNode
     {
-        [SerializeField][Tooltip("要等待的动画状态名称（为空则等待当前动画）")] private string animationStateName = "";
-        [SerializeField][Tooltip("动画层索引")] private int layerIndex = 0;
-        [SerializeField][Tooltip("等待时间（秒），如果动画未完成则超时返回成功")] private float timeout = 10f;
+        [SerializeField] [Tooltip("要等待的动画状态名称（为空则等待当前动画）")]
+        private string animationStateName = "";
+
+        [SerializeField] [Tooltip("动画层索引")] private int layerIndex = 0;
+
+        [SerializeField] [Tooltip("等待时间（秒），如果动画未完成则超时返回成功")]
+        private float timeout = 10f;
 
         private Animator animator;
         private int animationStateHash;
@@ -39,7 +44,8 @@ namespace MonsterBT.Runtime.Actions.Animation
                 animationStateHash = Animator.StringToHash(animationStateName);
                 if (!animator.HasState(layerIndex, animationStateHash))
                 {
-                    Debug.LogWarning($"[WaitForAnimationAction] Animation state '{animationStateName}' not found in Animator");
+                    Debug.LogWarning(
+                        $"[WaitForAnimationAction] Animation state '{animationStateName}' not found in Animator");
                 }
             }
 

@@ -8,7 +8,7 @@ namespace MonsterBT.Runtime
     /// </summary>
     public abstract class CompositeNode : BTNode
     {
-        [SerializeField] protected List<BTNode> children = new List<BTNode>();
+        [SerializeField] protected List<BTNode> children = new();
 
         public List<BTNode> Children => children;
 

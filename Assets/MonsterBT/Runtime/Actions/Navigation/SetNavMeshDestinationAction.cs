@@ -6,12 +6,18 @@ namespace MonsterBT.Runtime.Actions.Navigation
     /// <summary>
     /// 设置 NavMesh 目标节点：设置 NavMeshAgent 的目标位置，但不等待到达
     /// </summary>
-    [CreateAssetMenu(fileName = "SetNavMeshDestinationAction", menuName = "MonsterBTNode/Actions/Navigation/SetNavMeshDestinationAction")]
+    [CreateAssetMenu(fileName = "SetNavMeshDestinationAction",
+        menuName = "MonsterBTNode/Actions/Navigation/SetNavMeshDestinationAction")]
     public class SetNavMeshDestinationAction : ActionNode
     {
-        [SerializeField][Tooltip("目标位置（Vector3）的黑板键名，如果为空则使用目标 GameObject 的位置")] private string targetPositionKey = "";
-        [SerializeField][Tooltip("目标 GameObject 的黑板键名，如果设置了则优先使用")] private string targetKey = "Target";
-        [SerializeField][Tooltip("是否使用目标 GameObject")] private bool useTargetGameObject = false;
+        [SerializeField] [Tooltip("目标位置（Vector3）的黑板键名，如果为空则使用目标 GameObject 的位置")]
+        private string targetPositionKey = "";
+
+        [SerializeField] [Tooltip("目标 GameObject 的黑板键名，如果设置了则优先使用")]
+        private string targetKey = "Target";
+
+        [SerializeField] [Tooltip("是否使用目标 GameObject")]
+        private bool useTargetGameObject = false;
 
         private NavMeshAgent navMeshAgent;
 
