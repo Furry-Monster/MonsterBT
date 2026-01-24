@@ -46,8 +46,10 @@ namespace MonsterBT.Editor.View.Graph
 
             var blackboardView = new Blackboard { name = "blackboard", title = "Variables" };
             blackboardView.AddToClassList("blackboard");
-            blackboardView.addItemRequested += _ => Debug.Log("I don't know how to make this invisible.");
+            blackboardView.addItemRequested += _ => { };
             Add(blackboardView);
+
+            blackboardView.schedule.Execute(() => HideBlackboardAddButton(blackboardView)).ExecuteLater(1);
 
             blackboardManager = new BTBlackboardViewManager(null, blackboardView);
 
@@ -498,6 +500,23 @@ namespace MonsterBT.Editor.View.Graph
             if (behaviorTree != null && nodeViews is { Count: > 0 })
             {
                 BTAutoLayoutService.AutoLayout(behaviorTree, nodeViews);
+            }
+        }
+
+        private static void HideBlackboardAddButton(Blackboard blackboard)
+        {
+            if (blackboard == null)
+                return;
+
+            var allButtons = blackboard.Query<Button>().ToList();
+            foreach (var button in allButtons)
+            {
+                var buttonName = button.name?.ToLower() ?? "";
+                var buttonText = button.text?.ToLower() ?? "";
+                if (buttonName.Contains("add") || buttonText == "+" || buttonText == "add")
+                {
+                    button.style.display = DisplayStyle.None;
+                }
             }
         }
     }

@@ -10,8 +10,6 @@ namespace MonsterBT.Editor.Base
         public static event Action OnCreateNewRequested;
         public static event Action OnSaveRequested;
         public static event Action OnAutoLayoutRequested;
-        public static event Action OnPlayToggleRequested;
-        public static event Action OnDebugToggleRequested;
         public static event Action<BTNode> OnNodeSelected;
         public static event Action OnNodeDeselected;
         public static event Action<Type> OnNodeRequested;
@@ -36,16 +34,6 @@ namespace MonsterBT.Editor.Base
         public static void PublishAutoLayoutRequested()
         {
             OnAutoLayoutRequested?.Invoke();
-        }
-
-        public static void PublishPlayToggleRequested()
-        {
-            OnPlayToggleRequested?.Invoke();
-        }
-
-        public static void PublishDebugToggleRequested()
-        {
-            OnDebugToggleRequested?.Invoke();
         }
 
         public static void PublishNodeSelected(BTNode node)
@@ -79,8 +67,6 @@ namespace MonsterBT.Editor.Base
             OnCreateNewRequested = null;
             OnSaveRequested = null;
             OnAutoLayoutRequested = null;
-            OnPlayToggleRequested = null;
-            OnDebugToggleRequested = null;
             OnNodeSelected = null;
             OnNodeDeselected = null;
             OnNodeRequested = null;

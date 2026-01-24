@@ -72,6 +72,11 @@
     padding: 8px;
 }
 
+/* 隐藏Blackboard的添加按钮（使用右键菜单添加变量） */
+.blackboard .unity-blackboard__add-button {
+    display: none;
+}
+
 /* Blackboard 变量行容器 */
 .blackboard-variable-row {
     margin-bottom: 8px;
