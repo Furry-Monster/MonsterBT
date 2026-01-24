@@ -79,6 +79,8 @@ namespace MonsterBT.Editor.View.Sidebar
         public void OnBehaviorTreeChanged(BehaviorTree behaviorTree)
         {
             currentBehaviorTree = behaviorTree;
+            if (behaviorTreeField != null)
+                behaviorTreeField.value = behaviorTree;
             graphView?.SetBehaviorTree(currentBehaviorTree);
 
             onBehaviorTreeChangedCallback?.Invoke(behaviorTree);

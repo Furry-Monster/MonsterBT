@@ -349,10 +349,11 @@ namespace MonsterBT.Editor.View.Graph
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
-            mousePosition = evt.localMousePosition;
+            var graphMousePosition = contentViewContainer.WorldToLocal(evt.mousePosition);
+            mousePosition = graphMousePosition;
             if (contextMenuBuilder != null)
             {
-                contextMenuBuilder.BuildContextualMenu(evt, evt.localMousePosition);
+                contextMenuBuilder.BuildContextualMenu(evt, graphMousePosition);
             }
         }
 
@@ -396,7 +397,12 @@ namespace MonsterBT.Editor.View.Graph
 
         public void DuplicateNode(BTNodeView nodeView)
         {
-            nodeOperationService?.DuplicateNode(nodeView, new Vector2(200, 0), CreateViewForNode);
+            if (nodeView != null)
+            {
+                var originalPos = nodeView.GetPosition();
+                var offset = new Vector2(originalPos.width + 50, 0);
+                nodeOperationService?.DuplicateNode(nodeView, offset, CreateViewForNode);
+            }
         }
 
         public void DeleteNode(BTNodeView nodeView)
@@ -408,8 +414,20 @@ namespace MonsterBT.Editor.View.Graph
         {
             if (nodeOperationService != null && copiedNode != null)
             {
-                nodeOperationService.PasteNode(copiedNode, mousePosition, CreateViewForNode);
+                var pastePosition = GetMousePositionInContentView();
+                nodeOperationService.PasteNode(copiedNode, pastePosition, CreateViewForNode);
             }
+        }
+
+        private Vector2 GetMousePositionInContentView()
+        {
+            if (Event.current != null)
+            {
+                var mousePos = Event.current.mousePosition;
+                return contentViewContainer.WorldToLocal(mousePos);
+            }
+
+            return mousePosition;
         }
 
         public bool HasCopiedNode()

@@ -1,6 +1,35 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-8903281472612311824
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abc20b60d5e4fc4faaf435e6c03e1bfe, type: 3}
+  m_Name: AnotherTree
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.BehaviorTree
+  rootNode: {fileID: 5748730647499760848}
+  blackboard: {fileID: 6005699801122619978}
+--- !u!114 &5748730647499760848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f12988c564c2ab858f100b28b9ed2fb, type: 3}
+  m_Name: Root
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.RootNode
+  description: 
+  position: {x: 400, y: 100}
+  child: {fileID: 0}
+--- !u!114 &6005699801122619978
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -19,32 +48,3 @@ MonoBehaviour:
   gameObjectValues: []
   transformValues: []
   variableInfos: []
---- !u!114 &11400000
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: abc20b60d5e4fc4faaf435e6c03e1bfe, type: 3}
-  m_Name: AnotherTree
-  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.BehaviorTree
-  rootNode: {fileID: 2388590734333992780}
-  blackboard: {fileID: -8903281472612311824}
---- !u!114 &2388590734333992780
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f12988c564c2ab858f100b28b9ed2fb, type: 3}
-  m_Name: Root
-  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.RootNode
-  description: 
-  position: {x: 400, y: 100}
-  child: {fileID: 0}
