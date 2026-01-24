@@ -429,7 +429,7 @@ namespace MonsterBT.Editor
             var selectedNodes = selection.OfType<BTNodeView>()
                 .Where(nv => BTNodeEditorService.CanCopyNode(nv.Node, behaviorTree))
                 .ToList();
-            
+
             if (selectedNodes.Count > 0)
             {
                 // 复制第一个选中的节点（保持简单，后续可以扩展为多选）
@@ -448,7 +448,7 @@ namespace MonsterBT.Editor
             var selectedNodes = selection.OfType<BTNodeView>()
                 .Where(nv => BTNodeEditorService.CanDeleteNode(nv.Node))
                 .ToList();
-            
+
             foreach (var nodeView in selectedNodes)
             {
                 DeleteNode(nodeView);
@@ -460,7 +460,7 @@ namespace MonsterBT.Editor
             var selectedNodes = selection.OfType<BTNodeView>()
                 .Where(nv => BTNodeEditorService.CanDuplicateNode(nv.Node, behaviorTree))
                 .ToList();
-            
+
             foreach (var nodeView in selectedNodes)
             {
                 DuplicateNode(nodeView);

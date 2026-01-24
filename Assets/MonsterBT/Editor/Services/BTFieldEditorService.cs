@@ -102,5 +102,28 @@ namespace MonsterBT.Editor.Services
             });
             return enumField;
         }
+
+        public static ObjectField CreateComponentField(FieldInfo field, BTNode node, string displayName)
+        {
+            var fieldType = field.FieldType;
+            var objectField = new ObjectField(displayName)
+            {
+                objectType = fieldType,
+                value = field.GetValue(node) as UnityEngine.Object
+            };
+            objectField.RegisterValueChangedCallback(evt =>
+            {
+                Undo.RecordObject(node, $"Change {displayName}");
+                field.SetValue(node, evt.newValue);
+                EditorUtility.SetDirty(node);
+                BTEditorEventBus.PublishPropertyChanged(node, field.Name);
+            });
+            return objectField;
+        }
+
+        public static ObjectField CreateTransformField(FieldInfo field, BTNode node, string displayName)
+        {
+            return CreateComponentField(field, node, displayName);
+        }
     }
 }

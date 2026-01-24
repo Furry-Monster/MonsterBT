@@ -165,18 +165,26 @@ namespace MonsterBT.Editor
             var fieldType = field.FieldType;
             var fieldName = ObjectNames.NicifyVariableName(field.Name);
 
-            return fieldType switch
-            {
-                var t when t == typeof(string) => BTFieldEditorService.CreateStringField(field, node, fieldName),
-                var t when t == typeof(float) => BTFieldEditorService.CreateFloatField(field, node, fieldName),
-                var t when t == typeof(int) => BTFieldEditorService.CreateIntField(field, node, fieldName),
-                var t when t == typeof(bool) => BTFieldEditorService.CreateBoolField(field, node, fieldName),
-                var t when t == typeof(Vector3) => BTFieldEditorService.CreateVector3Field(field, node, fieldName),
-                var t when t == typeof(GameObject) =>
-                    BTFieldEditorService.CreateGameObjectField(field, node, fieldName),
-                var t when t.IsEnum => BTFieldEditorService.CreateEnumField(field, node, fieldName),
-                _ => null
-            };
+            if (fieldType == typeof(string))
+                return BTFieldEditorService.CreateStringField(field, node, fieldName);
+            if (fieldType == typeof(float))
+                return BTFieldEditorService.CreateFloatField(field, node, fieldName);
+            if (fieldType == typeof(int))
+                return BTFieldEditorService.CreateIntField(field, node, fieldName);
+            if (fieldType == typeof(bool))
+                return BTFieldEditorService.CreateBoolField(field, node, fieldName);
+            if (fieldType == typeof(Vector3))
+                return BTFieldEditorService.CreateVector3Field(field, node, fieldName);
+            if (fieldType == typeof(GameObject))
+                return BTFieldEditorService.CreateGameObjectField(field, node, fieldName);
+            if (fieldType.IsEnum)
+                return BTFieldEditorService.CreateEnumField(field, node, fieldName);
+            if (fieldType == typeof(Transform))
+                return BTFieldEditorService.CreateTransformField(field, node, fieldName);
+            if (typeof(Component).IsAssignableFrom(fieldType))
+                return BTFieldEditorService.CreateComponentField(field, node, fieldName);
+
+            return null;
         }
 
         #endregion

@@ -8,18 +8,9 @@ namespace MonsterBT.Editor
 {
     public static class BTNodeTypeHelper
     {
-        /// <summary>
-        /// 获取所有节点类型，按分类组织
-        /// </summary>
         public static Dictionary<string, List<Type>> GetAllNodeTypes()
         {
-            var nodeTypes = new Dictionary<string, List<Type>>
-            {
-                ["Composite"] = new List<Type>(),
-                ["Decorator"] = new List<Type>(),
-                ["Action"] = new List<Type>(),
-                ["Condition"] = new List<Type>(),
-            };
+            var nodeTypes = new Dictionary<string, List<Type>>();
 
             var assembly = typeof(BTNode).Assembly;
             var allTypes = assembly.GetTypes()
@@ -32,10 +23,20 @@ namespace MonsterBT.Editor
             foreach (var type in allTypes)
             {
                 var category = DetermineNodeCategory(type);
-                if (nodeTypes.ContainsKey(category))
+                var subCategory = GetNodeSubCategory(type);
+
+                var finalCategory = category;
+                if (!string.IsNullOrEmpty(subCategory))
                 {
-                    nodeTypes[category].Add(type);
+                    finalCategory = $"{category}/{subCategory}";
                 }
+
+                if (!nodeTypes.ContainsKey(finalCategory))
+                {
+                    nodeTypes[finalCategory] = new List<Type>();
+                }
+
+                nodeTypes[finalCategory].Add(type);
             }
 
             foreach (var category in nodeTypes.Keys.ToList())
@@ -46,9 +47,6 @@ namespace MonsterBT.Editor
             return nodeTypes;
         }
 
-        /// <summary>
-        /// 根据类型确定节点分类
-        /// </summary>
         public static string DetermineNodeCategory(Type type)
         {
             if (typeof(CompositeNode).IsAssignableFrom(type))
@@ -70,6 +68,27 @@ namespace MonsterBT.Editor
             }
 
             return "Other";
+        }
+
+        public static string GetNodeSubCategory(Type type)
+        {
+            var namespaceName = type.Namespace ?? "";
+            var typeName = type.Name;
+
+            if (namespaceName.Contains("Animation") || typeName.Contains("Animation") || typeName.Contains("Animator"))
+                return "Animation";
+
+            if (namespaceName.Contains("Navigation") || namespaceName.Contains("NavMesh") ||
+                typeName.Contains("Navigation") || typeName.Contains("NavMesh") || typeName.Contains("Path"))
+                return "Navigation";
+
+            if (namespaceName.Contains("Movement") || typeName.Contains("Move") || typeName.Contains("Patrol"))
+                return "Movement";
+
+            if (namespaceName.Contains("Combat") || typeName.Contains("Attack") || typeName.Contains("Combat"))
+                return "Combat";
+
+            return null;
         }
 
         /// <summary>

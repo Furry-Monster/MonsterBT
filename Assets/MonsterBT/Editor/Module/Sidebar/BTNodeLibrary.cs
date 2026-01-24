@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MonsterBT.Editor.Services;
 using UnityEngine.UIElements;
 
@@ -27,39 +28,63 @@ namespace MonsterBT.Editor
 
             var nodeTypes = BTNodeTypeHelper.GetAllNodeTypes();
 
-            // 动态获取所有分类，而不是硬编码
-            var categoryLabels = new Dictionary<string, string>
-            {
-                ["Composite"] = "Composite Nodes",
-                ["Decorator"] = "Decorator Nodes",
-                ["Action"] = "Action Nodes",
-                ["Condition"] = "Condition Nodes",
-                ["Other"] = "Other Nodes"
-            };
-
-            // 按分类顺序显示
             var categoryOrder = new[] { "Composite", "Decorator", "Action", "Condition", "Other" };
+            var processedCategories = new HashSet<string>();
 
-            foreach (var category in categoryOrder)
+            foreach (var baseCategory in categoryOrder)
             {
-                if (!nodeTypes.ContainsKey(category) || nodeTypes[category].Count == 0)
-                    continue;
+                var matchingCategories = nodeTypes.Keys
+                    .Where(k => k == baseCategory || k.StartsWith(baseCategory + "/"))
+                    .OrderBy(k => k)
+                    .ToList();
 
-                var section = new VisualElement { name = $"{category.ToLower()}-nodes" };
-                section.AddToClassList("sidebar-section");
-
-                var sectionTitle = new Label(categoryLabels.GetValueOrDefault(category, $"{category} Nodes"));
-                sectionTitle.AddToClassList("sidebar-title");
-                section.Add(sectionTitle);
-
-                foreach (var nodeType in nodeTypes[category])
+                foreach (var category in matchingCategories)
                 {
-                    var displayName = BTNodeTypeHelper.GetNodeDisplayName(nodeType);
-                    var itemName = $"{category.ToLower()}-{nodeType.Name.ToLower()}-item";
-                    section.Add(CreateNodeListItem(itemName, displayName, category, nodeType));
-                }
+                    if (processedCategories.Contains(category) || nodeTypes[category].Count == 0)
+                        continue;
 
-                scrollView.Add(section);
+                    processedCategories.Add(category);
+
+                    var section = new VisualElement { name = $"{category.ToLower().Replace("/", "-")}-nodes" };
+                    section.AddToClassList("sidebar-section");
+
+                    var displayLabel = FormatCategoryLabel(category);
+                    var sectionTitle = new Label(displayLabel);
+                    sectionTitle.AddToClassList("sidebar-title");
+                    section.Add(sectionTitle);
+
+                    foreach (var nodeType in nodeTypes[category])
+                    {
+                        var displayName = BTNodeTypeHelper.GetNodeDisplayName(nodeType);
+                        var itemName = $"{category.ToLower().Replace("/", "-")}-{nodeType.Name.ToLower()}-item";
+                        section.Add(CreateNodeListItem(itemName, displayName, category, nodeType));
+                    }
+
+                    scrollView.Add(section);
+                }
+            }
+
+            foreach (var category in nodeTypes.Keys)
+            {
+                if (!processedCategories.Contains(category) && nodeTypes[category].Count > 0)
+                {
+                    var section = new VisualElement { name = $"{category.ToLower().Replace("/", "-")}-nodes" };
+                    section.AddToClassList("sidebar-section");
+
+                    var displayLabel = FormatCategoryLabel(category);
+                    var sectionTitle = new Label(displayLabel);
+                    sectionTitle.AddToClassList("sidebar-title");
+                    section.Add(sectionTitle);
+
+                    foreach (var nodeType in nodeTypes[category])
+                    {
+                        var displayName = BTNodeTypeHelper.GetNodeDisplayName(nodeType);
+                        var itemName = $"{category.ToLower().Replace("/", "-")}-{nodeType.Name.ToLower()}-item";
+                        section.Add(CreateNodeListItem(itemName, displayName, category, nodeType));
+                    }
+
+                    scrollView.Add(section);
+                }
             }
 
             Add(scrollView);
@@ -80,6 +105,28 @@ namespace MonsterBT.Editor
             item.RegisterCallback<MouseDownEvent>(_ => { });
 
             return item;
+        }
+
+        private static string FormatCategoryLabel(string category)
+        {
+            if (category.Contains("/"))
+            {
+                var parts = category.Split('/');
+                var baseCategory = parts[0];
+                var subCategory = parts[1];
+                return $"{baseCategory} / {subCategory}";
+            }
+
+            var labels = new Dictionary<string, string>
+            {
+                ["Composite"] = "Composite Nodes",
+                ["Decorator"] = "Decorator Nodes",
+                ["Action"] = "Action Nodes",
+                ["Condition"] = "Condition Nodes",
+                ["Other"] = "Other Nodes"
+            };
+
+            return labels.GetValueOrDefault(category, $"{category} Nodes");
         }
     }
 }
