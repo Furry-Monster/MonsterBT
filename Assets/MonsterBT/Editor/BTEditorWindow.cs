@@ -151,6 +151,7 @@ namespace MonsterBT.Editor
 
         public void OnDestroy()
         {
+            Application.logMessageReceived -= OnUnityLogMessageReceived;
             BTEditorEventBus.ClearAll();
         }
 
@@ -178,8 +179,36 @@ namespace MonsterBT.Editor
                 BTEditorEventBus.OnNodeRequested += graphView.CreateNode;
             }
 
+            if (statusBar != null)
+            {
+                BTEditorEventBus.OnLogMessage += OnLogMessageReceived;
+            }
+
+            Application.logMessageReceived += OnUnityLogMessageReceived;
+
             if (currentBehaviorTree != null)
                 SetBehaviorTree(currentBehaviorTree);
+        }
+
+        private void OnLogMessageReceived(string message, LogType logType)
+        {
+            statusBar?.SetStatus(message, logType);
+        }
+
+        private void OnUnityLogMessageReceived(string logString, string stackTrace, LogType type)
+        {
+            if (string.IsNullOrEmpty(stackTrace) && string.IsNullOrEmpty(logString))
+                return;
+
+            var isMonsterBTLog = stackTrace != null && (stackTrace.Contains("MonsterBT") ||
+                                                        logString.Contains("[BT]") ||
+                                                        logString.Contains("BehaviorTree") ||
+                                                        logString.Contains("BehaviorTreeRunner") ||
+                                                        logString.Contains("BTNode") ||
+                                                        logString.Contains("BTEditor"));
+
+            if (isMonsterBTLog)
+                BTEditorEventBus.PublishLogMessage(logString, type);
         }
 
         private void OnBehaviorTreeChanged(BehaviorTree behaviorTree)

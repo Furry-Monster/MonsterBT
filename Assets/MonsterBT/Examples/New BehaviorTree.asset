@@ -27,6 +27,24 @@ MonoBehaviour:
   m_Name: Blackboard
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Blackboard
   variableInfos: []
+--- !u!114 &5494766150957365830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e099a95fa0d245a292cf6e49cddf02f9, type: 3}
+  m_Name: Parallel
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Composite.Parallel
+  description: 
+  position: {x: 629.6, y: 112.8}
+  children: []
+  finishMode: 0
+  successCount: 1
+  failureCount: 1
 --- !u!114 &5627034041966679249
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -40,5 +58,5 @@ MonoBehaviour:
   m_Name: Root
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.RootNode
   description: 
-  position: {x: 400, y: 100}
-  child: {fileID: 0}
+  position: {x: 400, y: 99.2}
+  child: {fileID: 5494766150957365830}

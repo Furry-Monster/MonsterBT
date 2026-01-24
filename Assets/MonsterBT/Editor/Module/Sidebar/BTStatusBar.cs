@@ -44,6 +44,25 @@ namespace MonsterBT.Editor
             statusText.text = status;
         }
 
+        public void SetStatus(string status, LogType logType)
+        {
+            statusText.text = status;
+
+            switch (logType)
+            {
+                case LogType.Error:
+                    statusText.style.color = new Color(1f, 0.4f, 0.4f);
+                    break;
+                case LogType.Warning:
+                    statusText.style.color = new Color(1f, 0.8f, 0.4f);
+                    break;
+                case LogType.Log:
+                default:
+                    statusText.style.color = new Color(0.78f, 0.78f, 0.78f);
+                    break;
+            }
+        }
+
         public void SetNodeCount(int count)
         {
             nodeCount.text = $"Nodes: {count}";

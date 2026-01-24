@@ -1,5 +1,6 @@
 using System;
 using MonsterBT.Runtime;
+using UnityEngine;
 
 namespace MonsterBT.Editor.Services
 {
@@ -85,6 +86,17 @@ namespace MonsterBT.Editor.Services
 
         #endregion
 
+        #region Log Events
+
+        public static event Action<string, LogType> OnLogMessage;
+
+        public static void PublishLogMessage(string message, LogType logType)
+        {
+            OnLogMessage?.Invoke(message, logType);
+        }
+
+        #endregion
+
         #region Cleanup
 
         public static void ClearAll()
@@ -99,6 +111,7 @@ namespace MonsterBT.Editor.Services
             OnNodeDeselected = null;
             OnNodeRequested = null;
             OnPropertyChanged = null;
+            OnLogMessage = null;
         }
 
         #endregion
