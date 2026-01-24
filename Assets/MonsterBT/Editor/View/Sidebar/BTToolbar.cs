@@ -1,4 +1,3 @@
-using MonsterBT.Editor.Base;
 using MonsterBT.Editor.Service.Asset;
 using MonsterBT.Editor.View.Graph;
 using BTEditorResources = MonsterBT.Editor.Base.BTEditorResources;
@@ -107,7 +106,7 @@ namespace MonsterBT.Editor.View.Sidebar
         {
             if (graphView != null && currentBehaviorTree != null)
             {
-                Debug.Log("执行自动布局");
+                graphView.AutoLayout();
             }
         }
 

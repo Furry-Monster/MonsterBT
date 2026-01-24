@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MonsterBT.Editor.Base;
 using MonsterBT.Editor.Service.Asset;
+using MonsterBT.Editor.Service.Layout;
 using MonsterBT.Editor.Service.Misc;
 using MonsterBT.Editor.Service.Operation;
 using BTEditorResources = MonsterBT.Editor.Base.BTEditorResources;
@@ -489,6 +490,14 @@ namespace MonsterBT.Editor.View.Graph
             if (nodeViews.TryGetValue(node, out var nodeView))
             {
                 nodeView.RefreshContent(propertyName);
+            }
+        }
+
+        public void AutoLayout()
+        {
+            if (behaviorTree != null && nodeViews is { Count: > 0 })
+            {
+                BTAutoLayoutService.AutoLayout(behaviorTree, nodeViews);
             }
         }
     }
