@@ -33,10 +33,7 @@ namespace MonsterBT.Editor.Services
                 return null;
 
             var nodeView = createNodeView(node);
-            if (nodeView != null)
-            {
-                nodeView.SetPosition(new Rect(position, Vector2.zero));
-            }
+            nodeView?.SetPosition(new Rect(position, Vector2.zero));
 
             return nodeView;
         }
@@ -109,10 +106,7 @@ namespace MonsterBT.Editor.Services
                 BTEditorAssetService.MarkDirty(behaviorTree);
 
                 var nodeView = createNodeView?.Invoke(newNode);
-                if (nodeView != null)
-                {
-                    nodeView.SetPosition(position);
-                }
+                nodeView?.SetPosition(position);
             }
             catch (Exception ex)
             {
