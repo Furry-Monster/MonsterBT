@@ -1,0 +1,119 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-7147315160992181092
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bc6d6d113f491640bf5e932897ecd08, type: 3}
+  m_Name: MoveToTargetNavMeshAction
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Actions.Navigation.MoveToTargetNavMeshAction
+  description: 
+  position: {x: 876.8, y: 250.6081}
+  targetKey: NewGameObject
+  speed: 1
+  stoppingDistance: 0.5
+  pathTimeout: 1
+  targetUpdateInterval: 0.5
+--- !u!114 &-505797782110454732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dafe1c7ca40b104694e6ddd06391fc4, type: 3}
+  m_Name: PlayAnimationAction
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Actions.Animation.PlayAnimationAction
+  description: 
+  position: {x: 876.8, y: -11.199997}
+  animationStateName: damage
+  layerIndex: 0
+  waitForCompletion: 0
+  transitionDuration: 0.25
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abc20b60d5e4fc4faaf435e6c03e1bfe, type: 3}
+  m_Name: TestTree
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.BehaviorTree
+  rootNode: {fileID: 5627034041966679249}
+  blackboard: {fileID: 4433581615578692157}
+--- !u!114 &4433581615578692157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a7afe406746554608b6b71054fb3fd4, type: 3}
+  m_Name: Blackboard
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Blackboard
+  variableInfos:
+  - name: NewGameObject
+    typeName: UnityEngine.GameObject, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    isExposed: 1
+--- !u!114 &4694584400141690227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ae69903f07736620982525bad125447, type: 3}
+  m_Name: Sequence
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Composite.Sequence
+  description: 
+  position: {x: 608.8, y: 103.99997}
+  children:
+  - {fileID: -505797782110454732}
+  - {fileID: 6267684555653018557}
+  - {fileID: -7147315160992181092}
+--- !u!114 &5627034041966679249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f12988c564c2ab858f100b28b9ed2fb, type: 3}
+  m_Name: Root
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.RootNode
+  description: 
+  position: {x: 393.00403, y: 112.8}
+  child: {fileID: 4694584400141690227}
+--- !u!114 &6267684555653018557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79c3957fec07d346d91b5436e50e79d7, type: 3}
+  m_Name: DebugLogAction
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Actions.DebugLogAction
+  description: 
+  position: {x: 876.8, y: 104.000015}
+  message: True Log
+  logType: 3
