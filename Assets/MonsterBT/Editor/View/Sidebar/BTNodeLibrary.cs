@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MonsterBT.Editor.Base;
-using BTEditorResources = MonsterBT.Editor.Base.BTEditorResources;
 using UnityEngine.UIElements;
 
 namespace MonsterBT.Editor.View.Sidebar
@@ -11,9 +10,6 @@ namespace MonsterBT.Editor.View.Sidebar
     {
         public BTNodeLibrary()
         {
-            var styleSheet = BTEditorResources.LoadStyleSheet("BTEditorStyle.uss");
-            if (styleSheet != null) styleSheets.Add(styleSheet);
-
             name = "node-library-panel";
             AddToClassList("sidebar");
             style.flexDirection = FlexDirection.Column;

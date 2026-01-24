@@ -1,4 +1,3 @@
-using MonsterBT.Editor.Base;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -11,9 +10,6 @@ namespace MonsterBT.Editor.View.Sidebar
 
         public BTStatusBar()
         {
-            var styleSheet = BTEditorResources.LoadStyleSheet("BTEditorStyle.uss");
-            if (styleSheet != null) styleSheets.Add(styleSheet);
-
             name = "status-bar";
             AddToClassList("status-bar");
 

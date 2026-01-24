@@ -1,6 +1,5 @@
 using MonsterBT.Editor.Service.Asset;
 using MonsterBT.Editor.View.Graph;
-using BTEditorResources = MonsterBT.Editor.Base.BTEditorResources;
 using MonsterBT.Runtime;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -18,9 +17,6 @@ namespace MonsterBT.Editor.View.Sidebar
 
         public BTToolbar()
         {
-            var styleSheet = BTEditorResources.LoadStyleSheet("BTEditorStyle.uss");
-            if (styleSheet != null) styleSheets.Add(styleSheet);
-
             var toolbar = new Toolbar { name = "main-toolbar" };
             toolbar.AddToClassList("editor-toolbar");
 
@@ -44,16 +40,6 @@ namespace MonsterBT.Editor.View.Sidebar
             autoLayoutBtn.AddToClassList("toolbar-button");
             autoLayoutBtn.clicked += AutoLayoutNodes;
             toolbar.Add(autoLayoutBtn);
-
-            var playBtn = new Button { name = "play-button", text = "▶ Play" };
-            playBtn.AddToClassList("toolbar-button");
-            playBtn.clicked += TogglePlayMode;
-            toolbar.Add(playBtn);
-
-            var debugBtn = new Button { name = "debug-button", text = "# Debug" };
-            debugBtn.AddToClassList("toolbar-button");
-            debugBtn.clicked += ToggleDebugMode;
-            toolbar.Add(debugBtn);
 
             Add(toolbar);
         }
@@ -108,16 +94,6 @@ namespace MonsterBT.Editor.View.Sidebar
             {
                 graphView.AutoLayout();
             }
-        }
-
-        public void TogglePlayMode()
-        {
-            Debug.Log("切换播放模式");
-        }
-
-        public void ToggleDebugMode()
-        {
-            Debug.Log("切换调试模式");
         }
 
         private void OnBehaviorTreeFieldChanged(ChangeEvent<Object> changeEvent)
