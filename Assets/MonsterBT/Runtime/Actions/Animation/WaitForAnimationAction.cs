@@ -63,7 +63,7 @@ namespace MonsterBT.Runtime.Actions.Animation
                 return BTNodeState.Success;
             }
 
-            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(layerIndex);
+            var stateInfo = animator.GetCurrentAnimatorStateInfo(layerIndex);
 
             if (hasSpecificAnimation)
             {

@@ -31,13 +31,13 @@ namespace MonsterBT.Runtime.Conditions
             if (!blackboard.HasKey(keyName))
                 return BTNodeState.Failure;
 
-            Vector3 currentValue = blackboard.GetVector3(keyName);
-            bool result = false;
+            var currentValue = blackboard.GetVector3(keyName);
+            var result = false;
 
             switch (comparisonType)
             {
                 case Vector3Comparison.DistanceTo:
-                    float distance = Vector3.Distance(currentValue, expectedVector);
+                    var distance = Vector3.Distance(currentValue, expectedVector);
                     result = distance <= expectedFloat;
                     break;
 

@@ -24,12 +24,12 @@ namespace MonsterBT.Runtime.Conditions
             if (useSquareDistance)
             {
                 // 使用平方距离避免开方运算，提升性能
-                float sqrDistance = (ownerTransform.position - targetObject.transform.position).sqrMagnitude;
+                var sqrDistance = (ownerTransform.position - targetObject.transform.position).sqrMagnitude;
                 inRange = sqrDistance <= range * range;
             }
             else
             {
-                float distance = Vector3.Distance(ownerTransform.position, targetObject.transform.position);
+                var distance = Vector3.Distance(ownerTransform.position, targetObject.transform.position);
                 inRange = distance <= range;
             }
 

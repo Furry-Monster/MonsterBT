@@ -65,7 +65,7 @@ namespace MonsterBT.Runtime.Actions.Animation
 
             if (waitForCompletion)
             {
-                AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(layerIndex);
+                var stateInfo = animator.GetCurrentAnimatorStateInfo(layerIndex);
                 if (stateInfo.shortNameHash == animationStateHash && stateInfo.normalizedTime >= 1.0f)
                 {
                     return BTNodeState.Success;

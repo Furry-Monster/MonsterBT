@@ -34,7 +34,6 @@ namespace MonsterBT.Runtime.Actions.Navigation
             if (navMeshAgent == null)
             {
                 Debug.LogError("[SetNavMeshDestinationAction] NavMeshAgent component not found on Owner");
-                return;
             }
         }
 
@@ -43,8 +42,8 @@ namespace MonsterBT.Runtime.Actions.Navigation
             if (navMeshAgent == null)
                 return BTNodeState.Failure;
 
-            Vector3 destination = Vector3.zero;
-            bool hasDestination = false;
+            var destination = Vector3.zero;
+            var hasDestination = false;
 
             if (useTargetGameObject && !string.IsNullOrEmpty(targetKey))
             {
@@ -70,16 +69,14 @@ namespace MonsterBT.Runtime.Actions.Navigation
                 return BTNodeState.Failure;
             }
 
-            if (NavMesh.SamplePosition(destination, out NavMeshHit hit, 5f, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(destination, out var hit, 5f, NavMesh.AllAreas))
             {
                 navMeshAgent.SetDestination(hit.position);
                 return BTNodeState.Success;
             }
-            else
-            {
-                Debug.LogWarning($"[SetNavMeshDestinationAction] Destination {destination} is not on NavMesh");
-                return BTNodeState.Failure;
-            }
+
+            Debug.LogWarning($"[SetNavMeshDestinationAction] Destination {destination} is not on NavMesh");
+            return BTNodeState.Failure;
         }
     }
 }

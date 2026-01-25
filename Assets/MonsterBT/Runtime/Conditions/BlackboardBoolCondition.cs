@@ -16,8 +16,8 @@ namespace MonsterBT.Runtime.Conditions
             if (!blackboard.HasKey(keyName))
                 return BTNodeState.Failure;
 
-            bool currentValue = blackboard.GetBool(keyName);
-            bool result = currentValue == expectedValue;
+            var currentValue = blackboard.GetBool(keyName);
+            var result = currentValue == expectedValue;
 
             return result ? BTNodeState.Success : BTNodeState.Failure;
         }

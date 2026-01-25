@@ -51,7 +51,7 @@ namespace MonsterBT.Runtime.Actions.Navigation
                 return;
             }
 
-            if (!NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 5f, NavMesh.AllAreas))
+            if (!NavMesh.SamplePosition(targetPosition, out var hit, 5f, NavMesh.AllAreas))
             {
                 Debug.LogWarning($"[MoveToPositionNavMeshAction] Target position {targetPosition} is not on NavMesh");
                 return;

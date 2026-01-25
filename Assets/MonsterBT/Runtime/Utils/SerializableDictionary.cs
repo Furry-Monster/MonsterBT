@@ -177,7 +177,7 @@ namespace MonsterBT.Runtime.Utils
         {
             lock (syncLock)
             {
-                return rawDict.TryGetValue(item.key, out TValue value) &&
+                return rawDict.TryGetValue(item.key, out var value) &&
                        EqualityComparer<TValue>.Default.Equals(value, item.value);
             }
         }
@@ -194,7 +194,7 @@ namespace MonsterBT.Runtime.Utils
                 if (array.Length - arrayIndex < rawDict.Count)
                     throw new ArgumentException("Array is too small");
 
-                int index = arrayIndex;
+                var index = arrayIndex;
                 foreach (var kvp in rawDict)
                 {
                     array[index++] = new SerializablePair<TKey, TValue> { key = kvp.Key, value = kvp.Value };
@@ -209,7 +209,7 @@ namespace MonsterBT.Runtime.Utils
                 if (rawDict.TryGetValue(item.key, out var value) &&
                     EqualityComparer<TValue>.Default.Equals(value, item.value))
                 {
-                    bool removed = rawDict.Remove(item.key);
+                    var removed = rawDict.Remove(item.key);
                     if (removed)
                         SyncToSerializable();
                     return removed;

@@ -122,7 +122,6 @@ MonoBehaviour:
   - key: Target
     value: {fileID: 0}
   transformValues: []
-  sceneObjectReferences: []
   variableInfos:
   - name: Target
     typeName: UnityEngine.GameObject, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral,
@@ -147,7 +146,7 @@ MonoBehaviour:
   m_Name: Sequence
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Composite.Sequence
   description: 
-  position: {x: 309.5, y: 349}
+  position: {x: 322.4, y: 344.6024}
   children:
   - {fileID: -505797782110454732}
   - {fileID: 1799239699505212364}

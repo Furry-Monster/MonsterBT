@@ -18,9 +18,9 @@ namespace MonsterBT.Runtime.Conditions
             if (!blackboard.HasKey(keyName))
                 return BTNodeState.Failure;
 
-            float currentValue = blackboard.GetFloat(keyName);
+            var currentValue = blackboard.GetFloat(keyName);
 
-            bool result = comparison switch
+            var result = comparison switch
             {
                 ComparisonType.LessThan => currentValue < compareValue,
                 ComparisonType.LessThanOrEqual => currentValue <= compareValue,

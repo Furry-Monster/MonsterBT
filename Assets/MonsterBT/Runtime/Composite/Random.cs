@@ -65,7 +65,7 @@ namespace MonsterBT.Runtime.Composite
 
             // 过滤掉null的子节点
             var validIndices = new List<int>();
-            for (int i = 0; i < Children.Count; i++)
+            for (var i = 0; i < Children.Count; i++)
             {
                 if (Children[i] == null)
                     continue;
@@ -95,12 +95,12 @@ namespace MonsterBT.Runtime.Composite
 
         private int SelectWeightedRandom(List<int> validIndices)
         {
-            float totalWeight = 0f;
+            var totalWeight = 0f;
 
             // 计算有效子节点的总权重
-            foreach (int index in validIndices)
+            foreach (var index in validIndices)
             {
-                float weight = index < weights.Count ? weights[index] : 1f;
+                var weight = index < weights.Count ? weights[index] : 1f;
                 totalWeight += Mathf.Max(weight, 0f); // 确保权重非负
             }
 
@@ -111,12 +111,12 @@ namespace MonsterBT.Runtime.Composite
             }
 
             // 利用随机值随机选取
-            float randomValue = UnityEngine.Random.Range(0f, totalWeight);
-            float currentWeight = 0f;
+            var randomValue = UnityEngine.Random.Range(0f, totalWeight);
+            var currentWeight = 0f;
 
-            foreach (int index in validIndices)
+            foreach (var index in validIndices)
             {
-                float weight = index < weights.Count ? weights[index] : 1f;
+                var weight = index < weights.Count ? weights[index] : 1f;
                 weight = Mathf.Max(weight, 0f);
 
                 currentWeight += weight;

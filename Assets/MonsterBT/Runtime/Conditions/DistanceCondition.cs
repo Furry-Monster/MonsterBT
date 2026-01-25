@@ -26,9 +26,9 @@ namespace MonsterBT.Runtime.Conditions
             if (ownerTransform == null || targetObject == null)
                 return BTNodeState.Failure;
 
-            float currentDistance = Vector3.Distance(ownerTransform.position, targetObject.transform.position);
+            var currentDistance = Vector3.Distance(ownerTransform.position, targetObject.transform.position);
 
-            bool result = comparison switch
+            var result = comparison switch
             {
                 ComparisonType.LessThan => currentDistance < compareDistance,
                 ComparisonType.LessThanOrEqual => currentDistance <= compareDistance,

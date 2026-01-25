@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using MonsterBT.Runtime.Utils;
+using UnityEditor;
 using UnityEngine;
 
 namespace MonsterBT.Runtime
@@ -125,12 +126,12 @@ namespace MonsterBT.Runtime
 
             if (typeof(T) == typeof(GameObject))
             {
-                return (T)(object)LoadFromSerializedList(gameObjectValues, key, (GameObject)null);
+                return (T)(object)LoadFromSerializedList(gameObjectValues, key, null);
             }
 
             if (typeof(T) == typeof(Transform))
             {
-                return (T)(object)LoadFromSerializedList(transformValues, key, (Transform)null);
+                return (T)(object)LoadFromSerializedList(transformValues, key, null);
             }
 
             return default(T);
@@ -192,13 +193,57 @@ namespace MonsterBT.Runtime
                     SaveToSerializedList(vector3Values, key, vector3Val);
                     break;
                 case GameObject gameObjectVal:
+                    CheckAndWarnSceneObject(key, gameObjectVal);
                     SaveToSerializedList(gameObjectValues, key, gameObjectVal);
                     break;
                 case Transform transformVal:
+                    CheckAndWarnSceneObject(key, transformVal.gameObject);
                     SaveToSerializedList(transformValues, key, transformVal);
                     break;
             }
         }
+
+#if UNITY_EDITOR
+       private void CheckAndWarnSceneObject(string key, GameObject gameObject)
+        {
+            if (gameObject == null)
+                return;
+
+            if (EditorUtility.IsPersistent(gameObject)) 
+                return;
+            
+            var scenePath = gameObject.scene.path;
+            var objectPath = GetGameObjectPath(gameObject);
+            Debug.LogWarning(
+                $"[Blackboard] GameObject '{key}' is set to a scene object '{objectPath}' in scene '{scenePath}'. " +
+                "Scene object references cannot be persisted in ScriptableObject. " +
+                "The reference will be lost when Unity Editor is closed. " +
+                "Consider using a Prefab reference or set the value at runtime instead.",
+                gameObject
+            );
+        }
+
+       private static string GetGameObjectPath(GameObject obj)
+        {
+            if (obj == null)
+                return "null";
+
+            var path = obj.name;
+            var current = obj.transform.parent;
+            
+            while (current != null)
+            {
+                path = current.name + "/" + path;
+                current = current.parent;
+            }
+            
+            return path;
+        }
+#else
+        private void CheckAndWarnSceneObject(string key, GameObject gameObject)
+        {
+        }
+#endif
 
         private void SaveToSerializedList<T>(List<SerializablePair<string, T>> list, string key, T value)
         {
@@ -328,9 +373,9 @@ namespace MonsterBT.Runtime
                 else if (type == typeof(Vector3))
                     SaveToSerializedList(vector3Values, name, Vector3.zero);
                 else if (type == typeof(GameObject))
-                    SaveToSerializedList(gameObjectValues, name, (GameObject)null);
+                    SaveToSerializedList(gameObjectValues, name, null);
                 else if (type == typeof(Transform))
-                    SaveToSerializedList(transformValues, name, (Transform)null);
+                    SaveToSerializedList(transformValues, name, null);
             }
 
             var info = new BlackboardVariableInfo

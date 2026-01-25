@@ -60,9 +60,9 @@ namespace MonsterBT.Runtime.Composite
             if (Children == null || Children.Count == 0)
                 return BTNodeState.Failure;
 
-            int successNodes = 0;
-            int failureNodes = 0;
-            int runningNodes = 0;
+            var successNodes = 0;
+            var failureNodes = 0;
+            var runningNodes = 0;
 
             // 更新所有还在运行的子节点
             foreach (var child in Children)
@@ -101,8 +101,8 @@ namespace MonsterBT.Runtime.Composite
 
         private BTNodeState CheckCompletion(int successNodes, int failureNodes, int runningNodes)
         {
-            int actualSuccessThreshold = successCount > 0 ? successCount : 1;
-            int actualFailureThreshold = failureCount > 0 ? failureCount : 1;
+            var actualSuccessThreshold = successCount > 0 ? successCount : 1;
+            var actualFailureThreshold = failureCount > 0 ? failureCount : 1;
 
             switch (finishMode)
             {

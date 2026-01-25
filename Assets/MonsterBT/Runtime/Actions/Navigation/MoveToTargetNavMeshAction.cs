@@ -90,7 +90,7 @@ namespace MonsterBT.Runtime.Actions.Navigation
 
             // 立即设置目标位置
             var targetPosition = targetTransform.position;
-            if (NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 5f, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(targetPosition, out var hit, 5f, NavMesh.AllAreas))
             {
                 navMeshAgent.SetDestination(hit.position);
                 Debug.Log(
@@ -156,7 +156,7 @@ namespace MonsterBT.Runtime.Actions.Navigation
             if (Time.time - lastTargetUpdateTime >= targetUpdateInterval)
             {
                 var targetPosition = targetTransform.position;
-                if (NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 5f, NavMesh.AllAreas))
+                if (NavMesh.SamplePosition(targetPosition, out var hit, 5f, NavMesh.AllAreas))
                 {
                     navMeshAgent.SetDestination(hit.position);
                 }
@@ -172,7 +172,7 @@ namespace MonsterBT.Runtime.Actions.Navigation
             if (!navMeshAgent.pathPending)
             {
                 // remainingDistance 可能是 Infinity（当路径刚计算完成时）或有效距离
-                float remainingDistance = navMeshAgent.remainingDistance;
+                var remainingDistance = navMeshAgent.remainingDistance;
 
                 // 如果距离是 Infinity，检查是否有有效路径
                 if (float.IsInfinity(remainingDistance))
@@ -181,7 +181,7 @@ namespace MonsterBT.Runtime.Actions.Navigation
                     // 或者目标已经在停止距离内，直接检查实际距离
                     if (navMeshAgent.pathStatus == NavMeshPathStatus.PathComplete)
                     {
-                        float actualDistance =
+                        var actualDistance =
                             Vector3.Distance(navMeshAgent.transform.position, targetTransform.position);
                         if (actualDistance <= stoppingDistance)
                         {

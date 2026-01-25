@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace MonsterBT.Runtime.Conditions
@@ -29,8 +30,8 @@ namespace MonsterBT.Runtime.Conditions
             if (!blackboard.HasKey(keyName))
                 return BTNodeState.Failure;
 
-            GameObject currentObject = blackboard.GetGameObject(keyName);
-            bool result = false;
+            var currentObject = blackboard.GetGameObject(keyName);
+            var result = false;
 
             switch (comparisonType)
             {
@@ -57,7 +58,7 @@ namespace MonsterBT.Runtime.Conditions
                 case GameObjectComparison.HasComponent:
                     if (currentObject != null)
                     {
-                        System.Type componentType = System.Type.GetType(componentTypeName);
+                        var componentType = Type.GetType(componentTypeName);
                         if (componentType != null)
                         {
                             result = currentObject.GetComponent(componentType) != null;
@@ -74,6 +75,8 @@ namespace MonsterBT.Runtime.Conditions
                 case GameObjectComparison.EqualsReference:
                     result = currentObject == referenceObject;
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             return result ? BTNodeState.Success : BTNodeState.Failure;
