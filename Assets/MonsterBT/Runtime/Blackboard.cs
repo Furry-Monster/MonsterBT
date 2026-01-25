@@ -19,34 +19,31 @@ namespace MonsterBT.Runtime
     [CreateAssetMenu(fileName = "Blackboard", menuName = "MonsterBT/Blackboard")]
     public class Blackboard : ScriptableObject
     {
-        // 序列化的默认值存储（用于 Editor 中设置的默认值）
+        // 序列化的值存储（用于 Editor 中设置的值）
         [SerializeField] private List<SerializablePair<string, bool>> boolValues = new();
         [SerializeField] private List<SerializablePair<string, float>> floatValues = new();
         [SerializeField] private List<SerializablePair<string, string>> stringValues = new();
         [SerializeField] private List<SerializablePair<string, Vector3>> vector3Values = new();
         [SerializeField] private List<SerializablePair<string, GameObject>> gameObjectValues = new();
         [SerializeField] private List<SerializablePair<string, Transform>> transformValues = new();
-
-        // 运行时黑板，用于和行为树交互
-        private readonly SerializableDictionary<string, object> data = new();
-
         // 黑板变量信息表，用于提供Editor界面信息
         [SerializeField] [ReadOnly] private List<BlackboardVariableInfo> variableInfos = new();
 
+        // 运行时黑板，用于和行为树交互
+        private readonly SerializableDictionary<string, object> data = new();
         private bool initialized = false;
 
         private void OnEnable()
         {
-            if (!initialized)
-            {
-                LoadDefaultValuesToRuntime();
-                initialized = true;
-            }
+            if (initialized) 
+                return;
+            
+            LoadSerializedValues();
+            initialized = true;
         }
 
-        private void LoadDefaultValuesToRuntime()
+        private void LoadSerializedValues()
         {
-            // 从序列化数据加载默认值到运行时字典
             foreach (var pair in boolValues.Where(pair => !data.ContainsKey(pair.key)))
             {
                 data[pair.key] = pair.value;
@@ -92,17 +89,16 @@ namespace MonsterBT.Runtime
             // 如果运行时字典中没有，检查序列化数据中是否有该键
             if (!HasKeyInSerializedData(key))
             {
-                return default(T);
+                return default;
             }
 
-            // 从序列化的默认值中加载
-            var defaultValue = LoadDefaultValue<T>(key);
-            // 将默认值加载到运行时字典
-            data[key] = defaultValue;
-            return defaultValue;
+            // 从序列化值中加载
+            var serializedValue = LoadSerializedValue<T>(key);
+            data[key] = serializedValue;
+            return serializedValue;
         }
 
-        private T LoadDefaultValue<T>(string key)
+        private T LoadSerializedValue<T>(string key)
         {
             if (typeof(T) == typeof(bool))
             {
@@ -134,18 +130,17 @@ namespace MonsterBT.Runtime
                 return (T)(object)LoadFromSerializedList(transformValues, key, null);
             }
 
-            return default(T);
+            return default;
         }
 
-        private T LoadFromSerializedList<T>(List<SerializablePair<string, T>> list, string key, T defaultValue)
+        private T LoadFromSerializedList<T>(List<SerializablePair<string, T>> list, string key, T value)
         {
-            foreach (var pair in list)
+            foreach (var pair in list.Where(pair => pair.key == key))
             {
-                if (pair.key == key)
-                    return pair.value;
+                return pair.value;
             }
 
-            return defaultValue;
+            return value;
         }
 
         private bool HasKeyInSerializedData(string key)
@@ -160,26 +155,20 @@ namespace MonsterBT.Runtime
 
         private bool HasKeyInList<T>(List<SerializablePair<string, T>> list, string key)
         {
-            foreach (var pair in list)
-            {
-                if (pair.key == key)
-                    return true;
-            }
-
-            return false;
+            return list.Any(pair => pair.key == key);
         }
 
         public void SetValue<T>(string key, T value)
         {
             data[key] = value;
-            SaveDefaultValue(key, value);
+            SaveSerializedValue(key, value);
         }
 
-        private void SaveDefaultValue<T>(string key, T value)
+        private void SaveSerializedValue<T>(string key, T value)
         {
             switch (value)
             {
-                // 保存默认值到序列化列表，以便 Unity 可以序列化
+                // 保存值到序列化列表，以便 Unity 可以序列化
                 case bool boolVal:
                     SaveToSerializedList(boolValues, key, boolVal);
                     break;
@@ -193,18 +182,18 @@ namespace MonsterBT.Runtime
                     SaveToSerializedList(vector3Values, key, vector3Val);
                     break;
                 case GameObject gameObjectVal:
-                    CheckAndWarnSceneObject(key, gameObjectVal);
+                    CheckSceneObjectRef(key, gameObjectVal);
                     SaveToSerializedList(gameObjectValues, key, gameObjectVal);
                     break;
                 case Transform transformVal:
-                    CheckAndWarnSceneObject(key, transformVal.gameObject);
+                    CheckSceneObjectRef(key, transformVal.gameObject);
                     SaveToSerializedList(transformValues, key, transformVal);
                     break;
             }
         }
 
 #if UNITY_EDITOR
-       private void CheckAndWarnSceneObject(string key, GameObject gameObject)
+       private static void CheckSceneObjectRef(string key, GameObject gameObject)
         {
             if (gameObject == null)
                 return;
@@ -240,7 +229,7 @@ namespace MonsterBT.Runtime
             return path;
         }
 #else
-        private void CheckAndWarnSceneObject(string key, GameObject gameObject)
+        private static void CheckAndWarnSceneObject(string key, GameObject gameObject)
         {
         }
 #endif
@@ -331,39 +320,31 @@ namespace MonsterBT.Runtime
             return variableInfos;
         }
 
-        /// <summary>
-        /// 添加变量
-        /// </summary>
-        /// <param name="name">变量名（Key名）</param>
-        /// <param name="type">变量类型</param>
-        /// <param name="defaultValue">默认值，可为空</param>
-        /// <param name="isExposed">是否在Editor暴露</param>
-        [SuppressMessage("ReSharper", "ParameterHidesMember")]
-        public void AddVariable(string name, Type type, object defaultValue = null, bool isExposed = true)
+       [SuppressMessage("ReSharper", "ParameterHidesMember")]
+        public void AddVariable(string name, Type type, object value = null, bool isExposed = true)
         {
             if (HasKey(name)) return;
 
-            // 设置默认值（会同时保存到序列化列表）
-            if (defaultValue != null)
+            if (value != null)
             {
                 if (type == typeof(bool))
-                    SetBool(name, (bool)defaultValue);
+                    SetBool(name, (bool)value);
                 else if (type == typeof(float))
-                    SetFloat(name, (float)defaultValue);
+                    SetFloat(name, (float)value);
                 else if (type == typeof(string))
-                    SetString(name, (string)defaultValue);
+                    SetString(name, (string)value);
                 else if (type == typeof(Vector3))
-                    SetVector3(name, (Vector3)defaultValue);
+                    SetVector3(name, (Vector3)value);
                 else if (type == typeof(GameObject))
-                    SetGameObject(name, (GameObject)defaultValue);
+                    SetGameObject(name, (GameObject)value);
                 else if (type == typeof(Transform))
-                    SetTransform(name, (Transform)defaultValue);
+                    SetTransform(name, (Transform)value);
                 else
-                    SetValue(name, defaultValue);
+                    SetValue(name, value);
             }
             else
             {
-                // 即使默认值为 null，也要初始化序列化列表中的条目
+                // 即使序列化值为 null，也要初始化序列化列表中的条目
                 if (type == typeof(bool))
                     SaveToSerializedList(boolValues, name, false);
                 else if (type == typeof(float))
@@ -388,10 +369,6 @@ namespace MonsterBT.Runtime
             variableInfos.Add(info);
         }
 
-        /// <summary>
-        /// 删除指定变量
-        /// </summary>
-        /// <param name="name">Key名</param>
         [SuppressMessage("ReSharper", "ParameterHidesMember")]
         public void RemoveVariable(string name)
         {
@@ -399,11 +376,6 @@ namespace MonsterBT.Runtime
             variableInfos.RemoveAll(info => info.name == name);
         }
 
-        /// <summary>
-        /// 重命名变量
-        /// </summary>
-        /// <param name="oldName">旧Key名</param>
-        /// <param name="newName">新Key名</param>
         public void RenameVariable(string oldName, string newName)
         {
             if (!HasKey(oldName) || HasKey(newName)) return;
@@ -450,11 +422,6 @@ namespace MonsterBT.Runtime
             }
         }
 
-        /// <summary>
-        /// 获取指定Key名变量的类型
-        /// </summary>
-        /// <param name="name">Key名</param>
-        /// <returns>变量类型</returns>
         [SuppressMessage("ReSharper", "ParameterHidesMember")]
         public Type GetVariableType(string name)
         {
@@ -462,10 +429,6 @@ namespace MonsterBT.Runtime
             return string.IsNullOrEmpty(info.typeName) ? null : Type.GetType(info.typeName);
         }
 
-        /// <summary>
-        /// 获取所有Key
-        /// </summary>
-        /// <returns>Key的一个迭代器</returns>
         public IEnumerable<string> GetAllKeys()
         {
             return data.Keys;
