@@ -122,6 +122,7 @@ MonoBehaviour:
   - key: Target
     value: {fileID: 0}
   transformValues: []
+  sceneObjectReferences: []
   variableInfos:
   - name: Target
     typeName: UnityEngine.GameObject, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral,
