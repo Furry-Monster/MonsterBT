@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MoveToTargetNavMeshAction
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Actions.Navigation.MoveToTargetNavMeshAction
   description: 
-  position: {x: 797.5, y: 598}
+  position: {x: 1140.8, y: 400}
   targetKey: Target
   speed: 0
   stoppingDistance: 0.5
@@ -32,7 +32,7 @@ MonoBehaviour:
   m_Name: BlackboardBoolCondition
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Conditions.BlackboardBoolCondition
   description: 
-  position: {x: 269.5, y: 847}
+  position: {x: 1630.4, y: 50.799988}
   keyName: IsOK
   expectedValue: 1
 --- !u!114 &-505797782110454732
@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Name: PlayAnimationAction
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Actions.Animation.PlayAnimationAction
   description: 
-  position: {x: -98.5, y: 598}
+  position: {x: 1140.8, y: -96.80005}
   animationStateName: damage
   layerIndex: 0
   waitForCompletion: 0
@@ -66,7 +66,7 @@ MonoBehaviour:
   m_Name: DebugLogAction
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Actions.DebugLogAction
   description: 
-  position: {x: 1282.5, y: 598}
+  position: {x: 1140.8, y: 648.4}
   message: Finish Navigation
   logType: 3
 --- !u!114 &11400000
@@ -96,7 +96,7 @@ MonoBehaviour:
   m_Name: Inverter
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Decorator.Inverter
   description: 
-  position: {x: 382, y: 598}
+  position: {x: 1140.8, y: 151.59998}
   child: {fileID: -890886723967788901}
 --- !u!114 &4433581615578692157
 MonoBehaviour:
@@ -146,7 +146,7 @@ MonoBehaviour:
   m_Name: Sequence
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Composite.Sequence
   description: 
-  position: {x: 322.4, y: 344.6024}
+  position: {x: 756.80005, y: 50.800003}
   children:
   - {fileID: -505797782110454732}
   - {fileID: 1799239699505212364}
@@ -165,5 +165,5 @@ MonoBehaviour:
   m_Name: Root
   m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.RootNode
   description: 
-  position: {x: 323, y: 100}
+  position: {x: 400, y: 50.800003}
   child: {fileID: 4694584400141690227}
