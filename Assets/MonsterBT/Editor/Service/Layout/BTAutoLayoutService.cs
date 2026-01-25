@@ -53,64 +53,64 @@ namespace MonsterBT.Editor.Service.Layout
             Dictionary<BTNode, BTNodeView> nodeViews, Dictionary<BTNode, Vector2> nodeSizes)
         {
             var layoutData = new Dictionary<BTNode, Rect>();
-            var subtreeWidths = new Dictionary<BTNode, float>();
+            var subtreeHeights = new Dictionary<BTNode, float>();
 
-            CalculateSubtreeWidths(rootNode, nodeSizes, subtreeWidths);
+            CalculateSubtreeHeights(rootNode, nodeSizes, subtreeHeights);
 
             var levels = BuildLevels(rootNode);
-            var levelY = StartY;
+            var levelX = StartX;
 
             foreach (var level in levels)
             {
                 if (level.Count == 0)
                     continue;
 
-                var totalWidth = level.Sum(node => subtreeWidths.GetValueOrDefault(node, nodeSizes[node].x));
-                var startX = StartX - totalWidth / 2f;
-                var currentX = startX;
+                var totalHeight = level.Sum(node => subtreeHeights.GetValueOrDefault(node, nodeSizes[node].y));
+                var startY = StartY - totalHeight / 2f;
+                var currentY = startY;
 
                 foreach (var node in level)
                 {
-                    var subtreeWidth = subtreeWidths.GetValueOrDefault(node, nodeSizes[node].x);
-                    var nodeWidth = nodeSizes[node].x;
-                    var nodeX = currentX + (subtreeWidth - nodeWidth) / 2f;
-                    var nodeY = levelY;
+                    var subtreeHeight = subtreeHeights.GetValueOrDefault(node, nodeSizes[node].y);
+                    var nodeHeight = nodeSizes[node].y;
+                    var nodeX = levelX;
+                    var nodeY = currentY + (subtreeHeight - nodeHeight) / 2f;
 
                     layoutData[node] = new Rect(nodeX, nodeY, nodeSizes[node].x, nodeSizes[node].y);
-                    currentX += subtreeWidth + HorizontalSpacing;
+                    currentY += subtreeHeight + VerticalSpacing;
                 }
 
-                var maxHeight = level.Max(node => nodeSizes[node].y);
-                levelY += maxHeight + VerticalSpacing;
+                var maxWidth = level.Max(node => nodeSizes[node].x);
+                levelX += maxWidth + HorizontalSpacing;
             }
 
             return layoutData;
         }
 
-        private static void CalculateSubtreeWidths(BTNode node, Dictionary<BTNode, Vector2> nodeSizes,
-            Dictionary<BTNode, float> subtreeWidths)
+        private static void CalculateSubtreeHeights(BTNode node, Dictionary<BTNode, Vector2> nodeSizes,
+            Dictionary<BTNode, float> subtreeHeights)
         {
             var children = BTNodeEditorService.GetChildren(node).ToList();
 
             if (children.Count == 0)
             {
-                subtreeWidths[node] = nodeSizes[node].x;
+                subtreeHeights[node] = nodeSizes[node].y;
                 return;
             }
 
             foreach (var child in children.Where(child => child != null))
             {
-                CalculateSubtreeWidths(child, nodeSizes, subtreeWidths);
+                CalculateSubtreeHeights(child, nodeSizes, subtreeHeights);
             }
 
-            var childrenWidth = children
+            var childrenHeight = children
                 .Where(c => c != null)
-                .Sum(c => subtreeWidths.GetValueOrDefault(c, nodeSizes[c].x) + HorizontalSpacing) - HorizontalSpacing;
+                .Sum(c => subtreeHeights.GetValueOrDefault(c, nodeSizes[c].y) + VerticalSpacing) - VerticalSpacing;
 
-            if (childrenWidth < 0)
-                childrenWidth = 0;
+            if (childrenHeight < 0)
+                childrenHeight = 0;
 
-            subtreeWidths[node] = Mathf.Max(nodeSizes[node].x, childrenWidth);
+            subtreeHeights[node] = Mathf.Max(nodeSizes[node].y, childrenHeight);
         }
 
         private static List<List<BTNode>> BuildLevels(BTNode rootNode)
