@@ -120,7 +120,7 @@ namespace MonsterBT.Runtime.Utils
         {
             lock (syncLock)
             {
-                bool removed = rawDict.Remove(key);
+                var removed = rawDict.Remove(key);
                 if (removed)
                     SyncToSerializable();
                 return removed;

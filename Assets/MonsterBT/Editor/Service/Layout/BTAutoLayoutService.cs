@@ -98,12 +98,9 @@ namespace MonsterBT.Editor.Service.Layout
                 return;
             }
 
-            foreach (var child in children)
+            foreach (var child in children.Where(child => child != null))
             {
-                if (child != null)
-                {
-                    CalculateSubtreeWidths(child, nodeSizes, subtreeWidths);
-                }
+                CalculateSubtreeWidths(child, nodeSizes, subtreeWidths);
             }
 
             var childrenWidth = children

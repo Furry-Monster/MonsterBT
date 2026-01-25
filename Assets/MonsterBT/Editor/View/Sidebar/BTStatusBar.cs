@@ -47,6 +47,8 @@ namespace MonsterBT.Editor.View.Sidebar
 
             switch (logType)
             {
+                case LogType.Assert:
+                case LogType.Exception:
                 case LogType.Error:
                     statusText.style.color = new Color(1f, 0.4f, 0.4f);
                     break;

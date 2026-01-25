@@ -2,7 +2,6 @@ using MonsterBT.Editor.Service.Asset;
 using MonsterBT.Editor.View.Graph;
 using MonsterBT.Runtime;
 using UnityEditor.UIElements;
-using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
@@ -17,6 +16,8 @@ namespace MonsterBT.Editor.View.Sidebar
 
         public BTToolbar()
         {
+            AddToClassList("toolbar-container");
+            
             var toolbar = new Toolbar { name = "main-toolbar" };
             toolbar.AddToClassList("editor-toolbar");
 
