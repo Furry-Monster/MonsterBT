@@ -1,0 +1,181 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-9046027184089555263
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ab2cf2e11c18830c982241b752fb2bc, type: 3}
+  m_Name: Inverter
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Decorator.Inverter
+  description: 
+  position: {x: 1135, y: 101.5}
+  child: {fileID: 2230628545675764823}
+--- !u!114 &-7515362456573772010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79c3957fec07d346d91b5436e50e79d7, type: 3}
+  m_Name: ExitLog
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Actions.DebugLogAction
+  description: 
+  position: {x: 1135, y: 848.5}
+  message: ExitTree
+  logType: 3
+--- !u!114 &-2386069038087566353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ae69903f07736620982525bad125447, type: 3}
+  m_Name: Sequence
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Composite.Sequence
+  description: 
+  position: {x: 754, y: 50.5}
+  children:
+  - {fileID: 485502510206162794}
+  - {fileID: -9046027184089555263}
+  - {fileID: 5564829297068172722}
+  - {fileID: 7493965052124201656}
+  - {fileID: -7515362456573772010}
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abc20b60d5e4fc4faaf435e6c03e1bfe, type: 3}
+  m_Name: MyBehaviourTree
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.BehaviorTree
+  rootNode: {fileID: 7356509383623200135}
+  blackboard: {fileID: 3296137595399743410}
+--- !u!114 &485502510206162794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79c3957fec07d346d91b5436e50e79d7, type: 3}
+  m_Name: EnterLog
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Actions.DebugLogAction
+  description: 
+  position: {x: 1135, y: -147.5}
+  message: EnterTree
+  logType: 3
+--- !u!114 &2230628545675764823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a1af322968f491c8ec1c2acafbd20ee, type: 3}
+  m_Name: BlackboardBoolCondition
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Conditions.BlackboardBoolCondition
+  description: 
+  position: {x: 1620, y: 50.5}
+  keyName: CanExec
+  expectedValue: 1
+--- !u!114 &3296137595399743410
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a7afe406746554608b6b71054fb3fd4, type: 3}
+  m_Name: Blackboard
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Blackboard
+  boolValues:
+  - key: CanExec
+    value: 0
+  floatValues: []
+  stringValues: []
+  vector3Values: []
+  gameObjectValues:
+  - key: TargetObject
+    value: {fileID: 0}
+  transformValues: []
+  variableInfos:
+  - name: TargetObject
+    typeName: UnityEngine.GameObject, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    isExposed: 1
+  - name: CanExec
+    typeName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+    isExposed: 1
+--- !u!114 &5564829297068172722
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dafe1c7ca40b104694e6ddd06391fc4, type: 3}
+  m_Name: PlayAnimationAction
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Actions.Animation.PlayAnimationAction
+  description: 
+  position: {x: 1135, y: 350.5}
+  animationStateName: damage
+  layerIndex: 0
+  waitForCompletion: 0
+  transitionDuration: 0.25
+--- !u!114 &7356509383623200135
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f12988c564c2ab858f100b28b9ed2fb, type: 3}
+  m_Name: Root
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.RootNode
+  description: 
+  position: {x: 400, y: 50.5}
+  child: {fileID: -2386069038087566353}
+--- !u!114 &7493965052124201656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bc6d6d113f491640bf5e932897ecd08, type: 3}
+  m_Name: MoveToTargetNavMeshAction
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterBT.Runtime.Actions.Navigation.MoveToTargetNavMeshAction
+  description: 
+  position: {x: 1135, y: 599.5}
+  targetKey: TargetObject
+  speed: 0
+  stoppingDistance: 0.5
+  pathTimeout: 1
+  targetUpdateInterval: 0.5

@@ -1,0 +1,26 @@
+{
+    "name": "com.furry-monster.monsterbt",
+    "version": "1.0.0",
+    "displayName": "Monster BT",
+    "description": "A robust Behavior Tree solution for AI in Unity 6.",
+    "unity": "6000.0",
+    "documentationUrl": "https://github.com/Furry-Monster/MonsterBT#readme",
+    "changelogUrl": "https://github.com/Furry-Monster/MonsterBT/releases",
+    "licensesUrl": "https://github.com/Furry-Monster/MonsterBT/blob/main/LICENSE",
+    "author": {
+        "name": "Furry-Monster",
+        "url": "https://github.com/Furry-Monster"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Furry-Monster/MonsterBT.git"
+    },
+    "keywords": [
+        "ai",
+        "behavior-tree",
+        "bt",
+        "game-ai",
+        "unity"
+    ],
+    "license": "MIT"
+}

@@ -17,6 +17,47 @@
 - 推荐 Unity 6000.3 以上
 - .NET Standard 2.1
 
+## 安装
+
+### 方式一：通过 Unity Package Manager (推荐)
+
+1. 打开 Unity 编辑器
+2. 菜单栏选择 `Window > Package Manager`
+3. 点击左上角 `+` 按钮，选择 `Add package from git URL...`
+4. 输入以下地址：
+
+```
+https://github.com/Furry-Monster/MonsterBT.git?path=Assets/MonsterBT
+```
+
+5. 点击 `Add` 等待安装完成
+
+#### 安装指定版本
+
+如果需要安装特定版本，可以在 URL 后添加版本标签：
+
+```
+https://github.com/Furry-Monster/MonsterBT.git?path=Assets/MonsterBT#v1.0.0
+```
+
+### 方式二：修改 manifest.json
+
+直接编辑项目的 `Packages/manifest.json` 文件，在 `dependencies` 中添加：
+
+```json
+{
+  "dependencies": {
+    "com.furry-monster.monsterbt": "https://github.com/Furry-Monster/MonsterBT.git?path=Assets/MonsterBT",
+    ...
+  }
+}
+```
+
+### 方式三：手动安装
+
+1. 下载本仓库的 ZIP 文件或克隆仓库
+2. 将 `Assets/MonsterBT` 文件夹复制到你项目的 `Assets` 目录下
+
 ## 快速开始
 
 ### 1. 创建行为树
