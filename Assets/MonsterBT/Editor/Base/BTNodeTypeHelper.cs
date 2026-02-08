@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using MonsterBT.Runtime;
+using UnityEditor;
 
 namespace MonsterBT.Editor.Base
 {
@@ -11,14 +12,7 @@ namespace MonsterBT.Editor.Base
         public static Dictionary<string, List<Type>> GetAllNodeTypes()
         {
             var nodeTypes = new Dictionary<string, List<Type>>();
-
-            var assembly = typeof(BTNode).Assembly;
-            var allTypes = assembly.GetTypes()
-                .Where(type => typeof(BTNode).IsAssignableFrom(type) &&
-                               !type.IsAbstract &&
-                               type != typeof(BTNode) &&
-                               type != typeof(RootNode))
-                .ToList();
+            var allTypes = GetBTNodeTypesFromAllAssemblies();
 
             foreach (var type in allTypes)
             {
@@ -45,6 +39,37 @@ namespace MonsterBT.Editor.Base
             }
 
             return nodeTypes;
+        }
+
+        /// <summary>
+        /// 从所有已加载程序集中收集 BTNode 子类，使通过 Git URL 安装插件后，
+        /// 项目内自定义节点也能被 Editor 识别。
+        /// </summary>
+        private static List<Type> GetBTNodeTypesFromAllAssemblies()
+        {
+#if UNITY_2021_2_OR_NEWER
+            return TypeCache.GetTypesDerivedFrom<BTNode>()
+                .Where(type => !type.IsAbstract && type != typeof(BTNode) && type != typeof(RootNode))
+                .ToList();
+#else
+            var list = new List<Type>();
+            var baseType = typeof(BTNode);
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                try
+                {
+                    foreach (var type in assembly.GetTypes())
+                    {
+                        if (type.IsAbstract || type == baseType || type == typeof(RootNode))
+                            continue;
+                        if (baseType.IsAssignableFrom(type))
+                            list.Add(type);
+                    }
+                }
+                catch (ReflectionTypeLoadException) { /* 忽略无法完全加载的程序集 */ }
+            }
+            return list;
+#endif
         }
 
         public static string GetNodeCategory(Type type)
