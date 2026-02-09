@@ -192,9 +192,10 @@ namespace MonsterBT.Runtime
             }
         }
 
-#if UNITY_EDITOR
+
        private static void CheckSceneObjectRef(string key, GameObject gameObject)
         {
+#if UNITY_EDITOR
             if (gameObject == null)
                 return;
 
@@ -210,6 +211,7 @@ namespace MonsterBT.Runtime
                 "Consider using a Prefab reference or set the value at runtime instead.",
                 gameObject
             );
+#endif
         }
 
        private static string GetGameObjectPath(GameObject obj)
@@ -228,11 +230,6 @@ namespace MonsterBT.Runtime
             
             return path;
         }
-#else
-        private static void CheckAndWarnSceneObject(string key, GameObject gameObject)
-        {
-        }
-#endif
 
         private void SaveToSerializedList<T>(List<SerializablePair<string, T>> list, string key, T value)
         {
